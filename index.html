@@ -1153,7 +1153,7 @@ function renderFlash(){
 function renderShop(){
   document.getElementById('shop-grid').innerHTML = SHOP.map((c, i) => {
     const big = LANG === 'zh' ? c.zh : c.ko;
-    const small = LANG === 'zh' ? c.ko + (c.ko2 ? ' / ' + c.ko2 : '') : c.zh;
+    const small = LANG === 'zh' ? c.ko + (c.ko2 ? ' / ' + c.ko2 : '') : (c.ko2 || c.zh);
     return `<button class="fc" onclick="openShop(${i})"><b>${big}</b><span>${small}</span></button>`;
   }).join('');
 }
