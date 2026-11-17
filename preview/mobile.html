@@ -14,10 +14,10 @@
 </style>
 </head>
 <body>
-<div class="wrap"><div class="lbl" id="lbl">390 × 844</div><iframe id="f" src="../?v=22#/pay"></iframe></div>
+<div class="wrap"><div class="lbl" id="lbl">390 × 844</div><iframe id="f" src="../"></iframe></div>
 <script>
-  var p = new URLSearchParams(location.search), t = p.get('t');
-  if (t) document.getElementById('f').src = '../?v=22#/' + t;
+  var p = new URLSearchParams(location.search), t = p.get('t') || 'pay';
+  document.getElementById('f').src = '../?cb=' + Date.now() + '#/' + t;
 </script>
 </body>
 </html>
