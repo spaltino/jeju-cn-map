@@ -4,12 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>济州现场地图 · 免安装 | 제주 현장지도</title>
-<meta name="description" content="为中国游客做的济州现场地图：免安装、简体中文，17个必去景点 + 机场大巴·出租车·公交车扫码支付 + 给司机看的韩文大字卡片。" />
+<meta name="description" content="为中国游客做的济州现场地图：免安装、简体中文，17个必去景点 + 机场大巴·出租车·公交车扫码支付 + 给司机·店员看的韩文大字卡片 + 每个景点最近的公交站。" />
 <meta name="theme-color" content="#0b1220" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta property="og:title" content="济州现场地图 · 免安装" />
-<meta property="og:description" content="17个景点 · 机场大巴·出租车·公交车扫码支付 · 给司机看的韩文卡片" />
+<meta property="og:description" content="17个景点 · 扫码坐公交 · 给司机·店员看的韩文大字卡片 · 最近的公交站" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://spaltino.github.io/jeju-cn-map/" />
 <meta property="og:locale" content="zh_CN" />
@@ -104,7 +104,7 @@
   .row .k{flex:0 0 auto; color:var(--dim); font-size:11.5px; font-weight:700; min-width:52px; padding-top:1px}
   .row .v{min-width:0}
   .fee{color:#ffd08a}
-  .acts{display:flex; gap:8px; margin-top:11px; padding-left:32px}
+  .acts{display:flex; gap:8px; margin-top:11px; padding-left:32px; flex-wrap:wrap}
   .btn{
     border:1px solid var(--line); background:#0f1a2b; color:var(--ink); border-radius:11px;
     padding:9px 12px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;
@@ -231,6 +231,14 @@
     border:1px solid rgba(255,208,138,.22);
   }
   .modal .ask{margin-top:24px; font-size:clamp(20px,6vw,27px); font-weight:800; color:#9ff0d3}
+  .modal .ko2{margin-top:12px; font-size:clamp(21px,6.4vw,38px); font-weight:900; letter-spacing:-.8px; line-height:1.22; color:#ffd08a}
+  .mini-h{font-size:11.5px; font-weight:800; letter-spacing:.02em; color:#8fa3bb; margin:15px 0 6px}
+  .seg{display:flex; gap:6px}
+  .seg button{flex:1; border:1px solid var(--line); background:#0f1a2b; color:var(--muted); border-radius:11px; padding:9px 0; font-size:13.5px; font-weight:800}
+  .seg button.on{background:var(--accent-soft); border-color:rgba(255,138,61,.55); color:#ffc79b}
+  .stopname{font-weight:800; color:#9ff0d3}
+  .stopzh{color:var(--dim); font-size:11.5px; margin-left:5px}
+  .spot .acts .btn.bus{color:#9ff0d3; border-color:rgba(47,211,164,.42)}
   .modal .sub{margin-top:6px; font-size:12.5px; color:#7d90a8}
   .modal .foot{display:flex; gap:9px; width:100%; max-width:680px; margin:0 auto; flex:0 0 auto}
   .modal .foot .btn{flex:1; justify-content:center; padding:14px; font-size:15px}
@@ -293,7 +301,7 @@
     </div>
     <div>
       <h1 id="h-title">济州现场地图</h1>
-      <p id="h-sub">免安装 · 简体中文 · 打车给司机看</p>
+      <p id="h-sub">免安装 · 简体中文 · 打车·点餐给当地人看</p>
     </div>
   </div>
   <div class="lang" role="group" aria-label="language">
@@ -395,6 +403,24 @@
       <p class="sub" id="mv-e-sub">点一下，全屏韩文大字</p>
       <div class="fc-grid" id="fc-grid"></div>
     </section>
+
+    <section class="card">
+      <h3><span class="ico">🚏</span><span id="bc-h">公交 · 售票处现场卡片</span></h3>
+      <p class="sub" id="bc-sub">点一下 → 全屏韩文大字（上车前问司机 · 买票时给售票员看）</p>
+
+      <div class="mini-h" id="bc-dest-h">① 上车前问司机</div>
+      <div class="chips" id="bc-dest" style="padding:0 0 4px"></div>
+      <div class="note" id="bc-dest-note">选目的地 → 打开「这趟车到 XX 吗？」大字卡片</div>
+
+      <div class="mini-h" id="bc-off-h">② 下车</div>
+      <div class="fc-grid" id="bc-off"></div>
+
+      <div class="mini-h" id="bc-tk-h">③ 售票处 · 牛岛船票</div>
+      <div class="mini-h" id="bc-person-h" style="margin:0 0 6px; color:#6f8199">人数</div>
+      <div class="seg" id="bc-seg"></div>
+      <div class="fc-grid" id="bc-tk" style="margin-top:10px"></div>
+      <div class="note" id="bc-tk-note">门票、船票都按人数说；到窗口先把手机举起来，再指人数。</div>
+    </section>
   </section>
 
   <!-- ============ TAB 3 : PAY ============ -->
@@ -403,6 +429,13 @@
       <h2 id="py-h1">支付 & 实战贴士</h2>
       <p id="py-h1s">支付宝/微信 · 退税 · 上网 · 紧急电话（2026年11月确认）</p>
     </div>
+
+    <section class="card">
+      <h3><span class="ico">👀</span><span id="shop-h">给店员看的大字卡片</span></h3>
+      <p class="sub" id="shop-sub">点一下 → 全屏韩文大字，直接给餐厅 · 咖啡厅 · 商店店员看</p>
+      <div class="fc-grid" id="shop-grid"></div>
+      <div class="note teal" id="shop-note">先点开卡片再递手机。结账前把第一张「支付」卡给店员看最快。</div>
+    </section>
 
     <section class="card">
       <h3><span class="ico">💰</span><span id="py-a">支付宝 / 微信支付能用在哪</span></h3>
@@ -476,7 +509,7 @@
 
 <footer class="foot">
   <div><b id="ftr-date">数据确认日</b> <span id="ftr-date-v">2026-11-17</span></div>
-  <div id="ftr-src">来源：济州巴士信息系统(bus.jeju.go.kr) · 济州观光协会观光地票价表 · 西归浦市 e-Ticket · 济州世界遗产本部 · 韩国观光公社 1330</div>
+  <div id="ftr-src">来源：济州巴士信息系统(bus.jeju.go.kr，含公交站名) · 济州观光协会观光地票价表 · 西归浦市 e-Ticket · 济州世界遗产本部 · 韩国观光公社 1330</div>
   <div id="ftr-note">本页是原型（第 1 版）。票价·时间可能变动，出发前请再确认一次。</div>
   <div style="margin-top:6px;opacity:.8" id="ftr-map">地图 © OpenStreetMap 贡献者 · 中国大陆网络下地图瓦片可能加载慢，景点列表不受影响</div>
 </footer>
@@ -495,6 +528,7 @@
     <div class="body"><div class="plate">
       <div class="tag" id="m-tag">목적지</div>
       <div class="ko" id="m-ko"></div>
+      <div class="ko2" id="m-ko2" style="display:none"></div>
       <div class="zh" id="m-zh"></div>
       <div class="addr" id="m-addr"></div>
       <div class="ask" id="m-ask">여기로 가 주세요</div>
@@ -675,9 +709,75 @@ const FLASH = [
   {ko:'1330에 전화해 주세요', zh:'请打 1330（中文翻译）', sub:'沟通不了时'}
 ];
 
+/* ---------- nearest bus stop for each spot ----------
+   source: 제주버스정보시스템 정류소 검색(bus.jeju.go.kr), 2026-11-17. Korean name as registered there;
+   m = straight-line distance (m) from the spot marker on this map. No stop exists on Udo itself. */
+const SPOT_STOP = {
+  airport: {ko:'제주국제공항 (GATE 1·2·5 앞)', zh:'济州国际机场（1·2·5号门前）', m:0},
+  dongmun: {ko:'동문로터리, 동문시장[남]', zh:'东门环岛, 东门市场[南]', m:40},
+  yongduam:{ko:'용두암현대1차아파트', zh:'龙头岩现代一期公寓', m:300},
+  heukdwaeji:{ko:'탑동푸른쉼터', zh:'塔洞绿色休息区', m:120},
+  handam:  {ko:'한담동[서]', zh:'汉潭洞[西]', m:240},
+  gwakji:  {ko:'곽지해수욕장[서]', zh:'郭支海水浴场[西]', m:350},
+  osulloc: {ko:'오설록', zh:'雪绿茶博物馆', m:100},
+  hamdeok: {ko:'함덕환승정류장(함덕해수욕장)[북]', zh:'咸德换乘车站（咸德海水浴场）[北]', m:230},
+  manjanggul:{ko:'만장굴[서]', zh:'万丈窟[西]', m:310},
+  bijarim: {ko:'비자림[남]', zh:'榧子林[南]', m:310},
+  seongsan:{ko:'성산일출봉입구[동]', zh:'城山日出峰入口[东]', m:1020},
+  seopjikoji:{ko:'섭지코지', zh:'涉地可支', m:1620},
+  udo:     {ko:'성산항', zh:'城山港', m:0, boat:{ko:'우도 가는 배 타는 항구', zh:'去牛岛的渡轮码头'}},
+  jusangjeolli:{ko:'제주국제컨벤션센터 중문대포해안주상절리대[남]', zh:'济州国际会展中心/中文大浦海岸柱状节理带[南]', m:670},
+  cheonjiyeon:{ko:'천지연폭포', zh:'天地渊瀑布', m:690},
+  jungmun: {ko:'중문색달해수욕장 입구[서]', zh:'中文穑达海水浴场入口[西]', m:540},
+  olle:    {ko:'매일올레시장 7번입구', zh:'每日偶来市场7号入口', m:210}
+};
+
+/* ---------- 给店员看 : restaurant / cafe / shop ---------- */
+const SHOP = [
+  {ko:'알리페이 · 제로페이 결제 되나요?', zh:'可以用支付宝 / Zero Pay 结账吗？',
+   note:{ko:'알리페이=支付宝, 제로페이=한국 QR결제', zh:'支付宝、Zero Pay 都是手机扫码'}},
+  {ko:'택스리펀(사후면세) 되나요?', zh:'可以办退税（事后免税）吗？',
+   note:{ko:'여권 보여주면 바로 차감', zh:'出示护照可以当场退税'}},
+  {ko:'안 맵게 해주세요', ko2:'덜 맵게 해주세요', zh:'请做不辣的 / 少辣一点',
+   note:{ko:'둘 중 하나를 가리키며 보여주세요', zh:'两道菜二选一，指着一个给店员看'}},
+  {ko:'포장해 주세요', zh:'请帮我打包', note:{ko:'남은 음식·테이크아웃', zh:'剩菜打包 / 外带'}},
+  {ko:'물 좀 주세요', zh:'请给我一点水', note:{ko:'한국은 물도 시켜야 나오는 곳이 있습니다', zh:'韩国有些店要开口才有水'}},
+  {ko:'제일 잘 나가는 메뉴가 뭐예요?', zh:'最有人气的是哪个？', note:{ko:'메뉴판을 가리키면 알아듣습니다', zh:'指着菜单问最方便'}},
+  {ko:'화장실이 어디예요?', zh:'洗手间在哪里？', note:{ko:'식당·카페 안 화장실', zh:'店内洗手间'}},
+  {ko:'영수증 주세요', ko2:'봉투 하나 주세요', zh:'请给我收据 / 请给我一个袋子',
+   note:{ko:'영수증=收据, 봉투=袋子', zh:'收据 / 购物袋'}}
+];
+
+/* ---------- bus destinations (boarding check) ---------- */
+const BUS_DESTS = [
+  {ko:'제주국제공항', zh:'济州国际机场'},
+  {ko:'성산일출봉', zh:'城山日出峰'},
+  {ko:'서귀포', zh:'西归浦'},
+  {ko:'중문', zh:'中文旅游区'},
+  {ko:'동문시장', zh:'东门市场'},
+  {ko:'함덕해수욕장', zh:'咸德海水浴场'},
+  {ko:'성산항', zh:'城山港'},
+  {ko:'애월', zh:'涯月'}
+];
+
+const BUS_OFF = [
+  {ko:'다음 정류장에서 내려 주세요', zh:'我在下一站下车', note:{ko:'내릴 때 한 번 더 보여주세요', zh:'快到站时再举一次'}}
+];
+
+/* ---------- ticket counter / ferry ---------- */
+const KO_NUM = ['', '한', '두', '세', '네'];
+const TICKETS = [
+  {id:'adm', n:2, tag:{ko:'입장권', zh:'门票'},
+   ko:n=>`성인 ${n}명 입장권 주세요`, ko2:n=>`어른 ${KO_NUM[n]} 장 주세요`,
+   zh:n=>`请给我 ${n} 张成人票`, note:{ko:'성산일출봉·만장굴·비자림 등', zh:'城山日出峰、万丈窟、榧子林等'}},
+  {id:'udo', n:2, tag:{ko:'우도 배표', zh:'牛岛船票'},
+   ko:n=>`우도 왕복 배표 성인 ${n}명 주세요`, ko2:n=>`우도 왕복 ${KO_NUM[n]} 명이요`,
+   zh:n=>`请给我 ${n} 张牛岛往返船票（成人）`, note:{ko:'성산항 여객터미널 · 여권 필요', zh:'城山港客运码头 · 需护照'}}
+];
+
 const T = {
   zh:{
-    title:'济州现场地图', sub:'免安装 · 简体中文 · 打车给司机看',
+    title:'济州现场地图', sub:'免安装 · 简体中文 · 打车·点餐给当地人看',
     tb1:'地图', tb2:'出行', tb3:'支付·贴士',
     hint:'点选地图编号 → 看详情',
     listTitle:'景点', listSub:n=>`共 ${n} 处`,
@@ -707,6 +807,16 @@ const T = {
     carP:'中国未加入《日内瓦道路交通公约》，因此中国驾照 + 国际驾照（IDP）都无法在韩国使用，济州租车公司不会租给中国游客（2026年7月济州道讨论过放宽，但官方明确「不是已决定的政策」）。',
     carP2:'替代：公交 + 出租车；牛岛上可租电动自行车/三轮电动车（需看保险条款）；多人可包车（带中文司机）。',
     mvE:'给司机看的大字卡片', mvESub:'点一下，全屏韩文大字',
+    shopH:'给店员看的大字卡片', shopSub:'点一下 → 全屏韩文大字，直接给餐厅 · 咖啡厅 · 商店店员看',
+    shopNote:'先点开卡片再递手机。结账前把第一张「支付」卡给店员看最快。',
+    bcH:'公交 · 售票处现场卡片', bcSub:'点一下 → 全屏韩文大字（上车前问司机 · 买票时给售票员看）',
+    bcDestH:'① 上车前问司机', bcOffH:'② 下车', bcTkH:'③ 售票处 · 牛岛船票', bcPersonH:'人数',
+    bcDestNote:'选目的地 → 打开「这趟车到 XX 吗？」大字卡片',
+    bcTkNote:'门票、船票都按人数说；到窗口先把手机举起来，再指人数。',
+    stopK:'最近公交站', approx:'约', askBus:'问公交',
+    cKickShop:'请把这一屏给店员看 · 점원에게', cTagShop:'店员 · 점원',
+    cKickBus:'请把这一屏给公交司机看 · 기사님께', cTagBus:'公交 · 버스',
+    cKickTicket:'请把这一屏给售票员看 · 매표소에', cTagTicket:'售票处 · 매표소',
     pyH1:'支付 & 实战贴士', pyH1s:'支付宝/微信 · 退税 · 上网 · 紧急电话（2026年11月确认）',
     pyA:'支付宝 / 微信支付能用在哪',
     a1t:'全岛公交车都能扫', a1:'2024年8月起，济州 868 辆公交车全部支持支付宝、微信支付等 9 个国家 17 个境外支付 App 扫码付车费。',
@@ -731,7 +841,7 @@ const T = {
     t4:'垃圾', t4v:'街头垃圾桶少，便利店有分类垃圾箱；随地丢烟头会被罚款',
     t5:'天气', t5v:'海岛风大，冬天体感更冷；山间（汉拿山、1100高地）与海边温差大，带件外套',
     ftrDate:'数据确认日', ftrSrc:'来源：济州巴士信息系统(bus.jeju.go.kr) · 济州观光协会观光地票价表 · 西归浦市 e-Ticket · 济州世界遗产本部 · 韩国观光公社 1330',
-    ftrNote:'本页是原型（第 1 版）。票价·时间可能变动，出发前请再确认一次。',
+    ftrNote:'本页是原型（第 2 版）。票价·时间可能变动，出发前请再确认一次。',
     ftrMap:'地图 © OpenStreetMap 贡献者 · 中国大陆网络下地图瓦片可能加载慢，景点列表不受影响',
     mKick:'请把这一屏给司机看 · 기사님께 보여주세요', mAsk:'여기로 가 주세요', mSub:'请带我去这里', mCopy:'复制地址', mClose:'关闭',
     close:'关闭'
@@ -767,6 +877,16 @@ const T = {
     carP:'중국은 제네바 도로교통협약 가입국이 아니라 중국 면허·국제운전면허증 모두 한국에서 쓸 수 없고, 제주 렌터카 업체도 중국인에게 차를 빌려주지 않습니다(2026년 7월 제주도가 완화를 논의했지만 "결정된 정책 아님"으로 정리).',
     carP2:'대안: 버스 + 택시, 우도에서는 전기 이륜차·삼륜차 대여(보험 조건 확인), 인원이 많으면 한국어 기사 포함 차량 대절.',
     mvE:'기사님께 보여줄 카드', mvESub:'누르면 전체 화면 큰 글씨',
+    shopH:'점원에게 보여줄 카드', shopSub:'누르면 전체 화면 큰 글씨 — 식당 · 카페 · 가게에서',
+    shopNote:'먼저 눌러 띄운 뒤 건네주세요. 계산 전에는 첫 장(결제) 카드가 가장 빠릅니다.',
+    bcH:'버스 · 매표소 현장 카드', bcSub:'누르면 전체 화면 큰 글씨 (탈 때 기사님, 표 살 때 매표소)',
+    bcDestH:'① 탈 때 · 기사님께', bcOffH:'② 내릴 때', bcTkH:'③ 매표소 · 우도 배표', bcPersonH:'인원',
+    bcDestNote:'목적지를 고르면 "이 버스 OO 가나요?" 카드가 열립니다',
+    bcTkNote:'입장권·배표 모두 인원수로 말합니다. 창구에서 핸드폰을 먼저 들고 인원을 가리키세요.',
+    stopK:'정류장', approx:'약', askBus:'버스 확인',
+    cKickShop:'점원에게 이 화면을 보여주세요', cTagShop:'점원',
+    cKickBus:'버스 기사님께 이 화면을 보여주세요', cTagBus:'버스',
+    cKickTicket:'매표소에 이 화면을 보여주세요', cTagTicket:'매표소',
     pyH1:'결제 & 실전 팁', pyH1s:'알리페이/위챗 · 택스리펀 · 통신 · 긴급 연락처(2026-11 확인)',
     pyA:'알리페이 / 위챗페이 되는 곳',
     a1t:'전 노선 버스 QR 결제', a1:'2024년 8월부터 제주 868대 버스 전 노선에서 알리페이·위챗페이 등 9개국 17개 해외 결제 앱 QR 결제가 됩니다.',
@@ -790,8 +910,8 @@ const T = {
     t3:'영업시간', t3v:'15:00–17:00 브레이크타임이 흔하고, 식당은 21:00 이후 대부분 닫습니다',
     t4:'쓰레기', t4v:'길거리 쓰레기통이 적고 편의점에 분리수거함이 있습니다. 담배꽁초 무단투기는 과태료',
     t5:'날씨', t5v:'섬이라 바람이 강하고 겨울 체감이 낮습니다. 산간(한라산·1100고지)과 해변은 일교차가 커 겉옷을 챙기세요',
-    ftrDate:'데이터 확인일', ftrSrc:'출처: 제주버스정보시스템(bus.jeju.go.kr) · 제주관광협회 관광지요금표 · 서귀포시 e-Ticket · 제주세계유산본부 · 한국관광공사 1330',
-    ftrNote:'1차 프로토타입입니다. 요금·시간은 바뀔 수 있으니 출발 전 다시 확인하세요.',
+    ftrDate:'데이터 확인일', ftrSrc:'출처: 제주버스정보시스템(bus.jeju.go.kr, 정류소명 포함) · 제주관광협회 관광지요금표 · 서귀포시 e-Ticket · 제주세계유산본부 · 한국관광공사 1330',
+    ftrNote:'2차 버전입니다. 요금·시간은 바뀔 수 있으니 출발 전 다시 확인하세요.',
     ftrMap:'지도 © OpenStreetMap 기여자 · 중국 본토 네트워크에서는 지도 타일이 느리거나 안 뜰 수 있고, 스팟 목록은 항상 표시됩니다',
     mKick:'기사님께 이 화면을 보여주세요', mAsk:'여기로 가 주세요', mSub:'请带我去这里', mCopy:'주소 복사', mClose:'닫기',
     close:'닫기'
@@ -825,6 +945,8 @@ function setLang(l){
   renderSpots();
   renderAirport();
   renderFlash();
+  renderShop();
+  renderBusCards();
   renderCalc();
   drawMarkers();
 }
@@ -855,6 +977,10 @@ function paintStatic(){
   set('mv-note3', x.note3);
   set('mv-d', x.mvD); set('car-t', x.carT); set('car-p', x.carP); set('car-p2', x.carP2);
   set('mv-e', x.mvE); set('mv-e-sub', x.mvESub);
+  set('shop-h', x.shopH); set('shop-sub', x.shopSub); set('shop-note', x.shopNote);
+  set('bc-h', x.bcH); set('bc-sub', x.bcSub);
+  set('bc-dest-h', x.bcDestH); set('bc-off-h', x.bcOffH); set('bc-tk-h', x.bcTkH);
+  set('bc-person-h', x.bcPersonH); set('bc-dest-note', x.bcDestNote); set('bc-tk-note', x.bcTkNote);
   set('py-h1', x.pyH1); set('py-h1s', x.pyH1s);
   set('py-a', x.pyA);
   set('pay-a1t', x.a1t); set('pay-a1', x.a1);
@@ -977,6 +1103,8 @@ function renderSpots(){
     const col = (CAT[s.cat]||{}).c || '#ff8a3d';
     const catName = (CAT[s.cat]||{})[LANG] || '';
     const fare = s.dist ? x.fareEst(s.min, fmt(taxiFare(s.dist)), s.dist) : '';
+    const st = SPOT_STOP[s.id];
+    const stopRow = st ? `<div class="row"><span class="k">${x.stopK}</span><span class="v"><b class="stopname">${st.ko}</b>${LANG === 'zh' ? `<span class="stopzh">${st.zh}</span>` : ''}${st.m ? `<span class="stopzh">${x.approx} ${fmtDist(st.m)}</span>` : ''}${st.boat ? `<span class="stopzh">${st.boat[LANG]}</span>` : ''}</span></div>` : '';
     return `<article class="spot" id="spot-${s.id}">
       <div class="spot-top" onclick="focusSpot('${s.id}')" style="cursor:pointer">
         <div class="num" style="background:${col}">${i}</div>
@@ -986,10 +1114,12 @@ function renderSpots(){
         <div class="row"><span class="k">${x.hours}</span><span class="v">${s.hours[LANG]}</span></div>
         <div class="row"><span class="k">${x.fee}</span><span class="v fee">${s.fee[LANG]}</span></div>
         <div class="row"><span class="k">${x.bus}</span><span class="v">${s.bus[LANG]}</span></div>
+        ${stopRow}
         ${s.dist ? `<div class="row"><span class="k">${x.taxi}</span><span class="v">${fare}</span></div>` : ''}
       </div>
       <div class="acts">
         <button class="btn primary" onclick="openDriver('${s.id}')">🚕 ${x.driver}</button>
+        ${st ? `<button class="btn bus" onclick="openBusSpot('${s.id}')">🚌 ${x.askBus}</button>` : ''}
         <button class="btn ghost" onclick="copyText('${s.addr.replace(/'/g,"\\'")}')">📋 ${x.copy}</button>
       </div>
     </article>`;
@@ -1017,6 +1147,39 @@ function renderFlash(){
     const small = LANG === 'zh' ? f.ko : f.zh;
     return `<button class="fc" onclick="openPhrase(${i})"><b>${big}</b><span>${small}</span></button>`;
   }).join('');
+}
+
+/* ---------- clerk cards ---------- */
+function renderShop(){
+  document.getElementById('shop-grid').innerHTML = SHOP.map((c, i) => {
+    const big = LANG === 'zh' ? c.zh : c.ko;
+    const small = LANG === 'zh' ? c.ko : c.zh;
+    return `<button class="fc" onclick="openShop(${i})"><b>${big}</b><span>${small}</span></button>`;
+  }).join('');
+}
+
+/* ---------- bus / ticket cards ---------- */
+let PERSONS = 2;
+function fmtDist(m){ return m >= 1000 ? (m / 1000).toFixed(1) + 'km' : m + 'm'; }
+function renderBusCards(){
+  document.getElementById('bc-dest').innerHTML = BUS_DESTS.map((d, i) =>
+    `<button class="chip" onclick="openBusDest(${i})">🚌 ${LANG === 'zh' ? d.zh : d.ko}</button>`).join('');
+  document.getElementById('bc-off').innerHTML = BUS_OFF.map((b, i) => {
+    const big = LANG === 'zh' ? b.zh : b.ko, small = LANG === 'zh' ? b.ko : b.zh;
+    return `<button class="fc" onclick="openBusOff(${i})"><b>${big}</b><span>${small}</span></button>`;
+  }).join('');
+  document.getElementById('bc-seg').innerHTML = [1,2,3,4].map(n =>
+    `<button class="${PERSONS === n ? 'on' : ''}" onclick="setPersons(${n})">${n}${LANG === 'zh' ? '人' : '명'}</button>`).join('');
+  document.getElementById('bc-tk').innerHTML = TICKETS.map((tk, i) => {
+    const big = LANG === 'zh' ? tk.zh(tk.n) : tk.ko(tk.n);
+    const small = LANG === 'zh' ? tk.ko(tk.n) : tk.tag.ko;
+    return `<button class="fc" onclick="openTicket(${i})"><b>${big}</b><span>${small}</span></button>`;
+  }).join('');
+}
+function setPersons(n){
+  PERSONS = n;
+  TICKETS.forEach(tk => { tk.n = n; });
+  renderBusCards();
 }
 
 function renderCalc(){
@@ -1047,34 +1210,75 @@ function setTab(id){
   if(id === 'map' && map) setTimeout(()=>map.invalidateSize(), 60);
 }
 
-/* ---------- driver modal ---------- */
+/* ---------- fullscreen card modal (driver / clerk / bus / ticket) ---------- */
 let currentAddr = '';
+function showCard(o){
+  const g = id => document.getElementById(id);
+  g('m-kick').textContent = o.kick || '';
+  const tag = g('m-tag');
+  if(o.tag){ tag.style.display = ''; tag.textContent = o.tag; } else { tag.style.display = 'none'; tag.textContent = ''; }
+  g('m-ko').textContent = o.ko || '';
+  const ko2 = g('m-ko2');
+  if(o.ko2){ ko2.style.display = ''; ko2.textContent = o.ko2; } else { ko2.style.display = 'none'; ko2.textContent = ''; }
+  const zh = g('m-zh');
+  if(o.zh){ zh.style.display = ''; zh.textContent = o.zh; } else { zh.style.display = 'none'; zh.textContent = ''; }
+  const line = g('m-addr');
+  if(o.line){ line.style.display = ''; line.textContent = o.line; } else { line.style.display = 'none'; line.textContent = ''; }
+  const ask = g('m-ask');
+  if(o.ask){ ask.style.display = ''; ask.textContent = o.ask; } else { ask.style.display = 'none'; ask.textContent = ''; }
+  g('m-sub').textContent = o.sub || '';
+  g('m-copy').style.display = o.copy ? '' : 'none';
+  currentAddr = o.copy || '';
+  g('modal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
 function openDriver(id){
   const s = SPOTS.find(x => x.id === id);
   if(!s) return;
-  currentAddr = s.addr;
-  document.getElementById('m-tag').style.display = '';
-  document.getElementById('m-tag').textContent = LANG === 'zh' ? '목적지 · 目的地' : '목적지';
-  document.getElementById('m-zh').textContent = s.zh;
-  document.getElementById('m-ko').textContent = s.ko;
-  document.getElementById('m-addr').textContent = s.addr;
-  document.getElementById('m-ask').textContent = t().mAsk;
-  document.getElementById('m-sub').textContent = t().mSub;
-  document.getElementById('modal').classList.add('on');
-  document.body.style.overflow = 'hidden';
+  showCard({
+    kick: t().mKick, tag: LANG === 'zh' ? '목적지 · 目的地' : '목적지',
+    ko: s.ko, zh: s.zh, line: s.addr,
+    ask: t().mAsk, sub: t().mSub, copy: s.addr
+  });
 }
 function openPhrase(i){
   const f = FLASH[i];
-  currentAddr = '';
-  document.getElementById('m-tag').style.display = 'none';
-  document.getElementById('m-zh').textContent = f.zh;
-  document.getElementById('m-ko').textContent = f.ko;
-  document.getElementById('m-addr').textContent = '';
-  document.getElementById('m-addr').style.display = 'none';
-  document.getElementById('m-ask').textContent = '';
-  document.getElementById('m-sub').textContent = f.sub;
-  document.getElementById('modal').classList.add('on');
-  document.body.style.overflow = 'hidden';
+  showCard({kick: t().mKick, ko: f.ko, zh: f.zh, sub: f.sub});
+}
+function openShop(i){
+  const c = SHOP[i], x = t();
+  if(!c) return;
+  showCard({kick: x.cKickShop, tag: x.cTagShop, ko: c.ko, ko2: c.ko2, zh: c.zh,
+            sub: c.note ? c.note[LANG] : ''});
+}
+function openBusDest(i){
+  const d = BUS_DESTS[i], x = t();
+  if(!d) return;
+  showCard({kick: x.cKickBus, tag: x.cTagBus, ko: `이 버스 ${d.ko} 가나요?`, zh: `这趟车到${d.zh}吗？`,
+            sub: LANG === 'zh' ? '上车前把这一屏给司机看' : '타기 전에 기사님께 보여주세요'});
+}
+function openBusOff(i){
+  const b = BUS_OFF[i], x = t();
+  if(!b) return;
+  showCard({kick: x.cKickBus, tag: x.cTagBus, ko: b.ko, zh: b.zh, sub: b.note[LANG]});
+}
+function openTicket(i){
+  const tk = TICKETS[i], x = t(), n = tk.n;
+  if(!tk) return;
+  showCard({kick: x.cKickTicket, tag: LANG === 'zh' ? tk.tag.zh : tk.tag.ko,
+            ko: tk.ko(n), ko2: tk.ko2(n), zh: tk.zh(n), sub: tk.note[LANG]});
+}
+function openBusSpot(id){
+  const s = SPOTS.find(x => x.id === id), st = SPOT_STOP[id];
+  if(!s || !st) return;
+  const x = t();
+  showCard({
+    kick: x.cKickBus, tag: x.cTagBus,
+    ko: `이 버스 ${s.ko} 가나요?`, zh: `这趟车到${s.zh}吗？`,
+    line: st.ko,
+    sub: LANG === 'zh' ? '上面是最近的公交站名，给司机看站名就行' : '가까운 정류장 이름입니다'
+  });
 }
 function closeModal(){
   document.getElementById('modal').classList.remove('on');
@@ -1112,6 +1316,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSpots();
   renderAirport();
   renderFlash();
+  renderShop();
+  renderBusCards();
   renderCalc();
   document.getElementById('calc-sel').addEventListener('change', updateCalc);
   initMap();
