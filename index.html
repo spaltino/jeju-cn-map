@@ -222,7 +222,7 @@
   }
   .modal .tag{display:inline-block; font-size:11px; font-weight:800; letter-spacing:.16em; color:#ffbc90;
     background:rgba(255,138,61,.14); border:1px solid rgba(255,138,61,.32); padding:3px 10px; border-radius:999px; margin-bottom:14px}
-  .modal .ko{font-size:clamp(36px, 10.4vw, 64px); font-weight:900; letter-spacing:-1.2px; line-height:1.16; color:#fff}
+  .modal .ko{font-size:clamp(34px, 9.4vw, 56px); font-weight:900; letter-spacing:-1.2px; line-height:1.18; color:#fff; word-break:keep-all; overflow-wrap:anywhere}
   .modal .zh{font-size:14.5px; color:#93a7bf; margin-top:8px; letter-spacing:.02em}
   .modal .addr{
     margin:18px auto 0; display:inline-block;
@@ -231,9 +231,9 @@
     border:1px solid rgba(255,208,138,.22);
   }
   .modal .ask{margin-top:24px; font-size:clamp(20px,6vw,27px); font-weight:800; color:#9ff0d3}
-  .modal .ko2{margin-top:12px; font-size:clamp(21px,6.4vw,38px); font-weight:900; letter-spacing:-.8px; line-height:1.22; color:#ffd08a}
+  .modal .ko2{margin-top:12px; font-size:clamp(20px,5.8vw,34px); font-weight:900; letter-spacing:-.8px; line-height:1.24; color:#ffd08a; word-break:keep-all; overflow-wrap:anywhere}
   .mini-h{font-size:11.5px; font-weight:800; letter-spacing:.02em; color:#8fa3bb; margin:15px 0 6px}
-  .seg{display:flex; gap:6px}
+  .seg{display:flex; gap:6px; max-width:360px}
   .seg button{flex:1; border:1px solid var(--line); background:#0f1a2b; color:var(--muted); border-radius:11px; padding:9px 0; font-size:13.5px; font-weight:800}
   .seg button.on{background:var(--accent-soft); border-color:rgba(255,138,61,.55); color:#ffc79b}
   .stopname{font-weight:800; color:#9ff0d3}
@@ -814,9 +814,9 @@ const T = {
     bcDestNote:'选目的地 → 打开「这趟车到 XX 吗？」大字卡片',
     bcTkNote:'门票、船票都按人数说；到窗口先把手机举起来，再指人数。',
     stopK:'最近公交站', approx:'约', askBus:'问公交',
-    cKickShop:'请把这一屏给店员看 · 점원에게', cTagShop:'店员 · 점원',
-    cKickBus:'请把这一屏给公交司机看 · 기사님께', cTagBus:'公交 · 버스',
-    cKickTicket:'请把这一屏给售票员看 · 매표소에', cTagTicket:'售票处 · 매표소',
+    cKickShop:'请把这一屏给店员看', cTagShop:'店员 · 점원',
+    cKickBus:'请把这一屏给公交司机看', cTagBus:'公交 · 버스',
+    cKickTicket:'请把这一屏给售票员看', cTagTicket:'售票处 · 매표소',
     pyH1:'支付 & 实战贴士', pyH1s:'支付宝/微信 · 退税 · 上网 · 紧急电话（2026年11月确认）',
     pyA:'支付宝 / 微信支付能用在哪',
     a1t:'全岛公交车都能扫', a1:'2024年8月起，济州 868 辆公交车全部支持支付宝、微信支付等 9 个国家 17 个境外支付 App 扫码付车费。',
@@ -1153,7 +1153,7 @@ function renderFlash(){
 function renderShop(){
   document.getElementById('shop-grid').innerHTML = SHOP.map((c, i) => {
     const big = LANG === 'zh' ? c.zh : c.ko;
-    const small = LANG === 'zh' ? c.ko : c.zh;
+    const small = LANG === 'zh' ? c.ko + (c.ko2 ? ' / ' + c.ko2 : '') : c.zh;
     return `<button class="fc" onclick="openShop(${i})"><b>${big}</b><span>${small}</span></button>`;
   }).join('');
 }
