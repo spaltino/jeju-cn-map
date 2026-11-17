@@ -1275,7 +1275,7 @@ function openBusSpot(id){
   const x = t();
   showCard({
     kick: x.cKickBus, tag: x.cTagBus,
-    ko: `이 버스 ${s.ko} 가나요?`, zh: `这趟车到${s.zh}吗？`,
+    ko: `이 버스 ${s.ko} 가나요?`, zh: `这趟车到${s.zh}吗？ 站名：${st.zh}`,
     ko2: st.ko,
     sub: LANG === 'zh' ? '上面是最近的公交站名 · 给司机看站名就行' : '가까운 정류장 이름입니다'
   });
