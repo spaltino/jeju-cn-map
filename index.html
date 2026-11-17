@@ -186,8 +186,8 @@
     text-align:left; border:1px solid var(--line); background:#0f1a2b; border-radius:13px;
     padding:11px 12px; color:var(--ink);
   }
-  .fc b{display:block; font-size:13.2px; line-height:1.4}
-  .fc span{display:block; margin-top:3px; font-size:11.5px; color:var(--dim)}
+  .fc b{display:block; font-size:13.2px; line-height:1.4; word-break:keep-all}
+  .fc span{display:block; margin-top:3px; font-size:11.5px; color:var(--dim); word-break:keep-all}
 
   /* bottom nav */
   nav.tabs{
@@ -301,7 +301,7 @@
     </div>
     <div>
       <h1 id="h-title">济州现场地图</h1>
-      <p id="h-sub">免安装 · 简体中文 · 打车·点餐给当地人看</p>
+      <p id="h-sub">免安装 · 简体中文 · 现场大字卡片</p>
     </div>
   </div>
   <div class="lang" role="group" aria-label="language">
@@ -777,7 +777,7 @@ const TICKETS = [
 
 const T = {
   zh:{
-    title:'济州现场地图', sub:'免安装 · 简体中文 · 打车·点餐给当地人看',
+    title:'济州现场地图', sub:'免安装 · 简体中文 · 现场大字卡片',
     tb1:'地图', tb2:'出行', tb3:'支付·贴士',
     hint:'点选地图编号 → 看详情',
     listTitle:'景点', listSub:n=>`共 ${n} 处`,
@@ -847,7 +847,7 @@ const T = {
     close:'关闭'
   },
   ko:{
-    title:'제주 현장지도', sub:'설치 없이 · 간체중문 · 기사님 카드',
+    title:'제주 현장지도', sub:'설치 없이 · 간체중문 · 현장 카드',
     tb1:'지도', tb2:'이동', tb3:'결제·팁',
     hint:'지도 번호를 누르면 상세',
     listTitle:'스팟', listSub:n=>`총 ${n}곳`,
@@ -1276,8 +1276,8 @@ function openBusSpot(id){
   showCard({
     kick: x.cKickBus, tag: x.cTagBus,
     ko: `이 버스 ${s.ko} 가나요?`, zh: `这趟车到${s.zh}吗？`,
-    line: st.ko,
-    sub: LANG === 'zh' ? '上面是最近的公交站名，给司机看站名就行' : '가까운 정류장 이름입니다'
+    ko2: st.ko,
+    sub: LANG === 'zh' ? '上面是最近的公交站名 · 给司机看站名就行' : '가까운 정류장 이름입니다'
   });
 }
 function closeModal(){
