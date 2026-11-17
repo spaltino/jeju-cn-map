@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>济州现场地图 · 免安装 | 제주 현장지도</title>
+<meta name="description" content="为中国游客做的济州现场地图：免安装、简体中文，17个必去景点 + 机场大巴·出租车·公交车扫码支付 + 给司机看的韩文大字卡片。" />
+<meta name="theme-color" content="#0b1220" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta property="og:title" content="济州现场地图 · 免安装" />
+<meta property="og:description" content="17个景点 · 机场大巴·出租车·公交车扫码支付 · 给司机看的韩文卡片" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://spaltino.github.io/jeju-cn-map/" />
+<meta property="og:locale" content="zh_CN" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M32 15c7 0 12 5 12 11 0 9-12 23-12 23S20 35 20 26c0-6 5-11 12-11z' fill='%23ff8a3d'/%3E%3Ccircle cx='32' cy='26' r='4.6' fill='%230b1220'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="leaflet.css" />
+<style>
+  :root{
+    --bg:#0b1220; --bg2:#0e1726; --panel:#111c2e; --card:#152135; --card2:#1a2942;
+    --line:#25344c; --ink:#eef4fb; --muted:#93a4bb; --dim:#6f8199;
+    --accent:#ff8a3d; --accent-soft:rgba(255,138,61,.14);
+    --teal:#2fd3a4; --blue:#48b8f5; --violet:#b48cf7; --pink:#f472b6; --indigo:#7c8cff;
+    --radius:16px;
+    --shadow:0 8px 24px rgba(3,8,18,.45);
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+            "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK SC", "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 78% -10%, rgba(255,138,61,.10), transparent 60%),
+      radial-gradient(900px 500px at 10% 0%, rgba(47,211,164,.08), transparent 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--font); font-size:16px; line-height:1.55;
+    -webkit-font-smoothing:antialiased; padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  }
+  a{color:inherit}
+  button{font-family:inherit; cursor:pointer}
+
+  /* header */
+  header.top{
+    position:sticky; top:0; z-index:600; padding:10px 14px calc(10px + env(safe-area-inset-top)) 14px;
+    background:linear-gradient(180deg, rgba(11,18,32,.97), rgba(11,18,32,.86) 70%, rgba(11,18,32,0));
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand{display:flex; align-items:center; gap:9px; min-width:0}
+  .mark{
+    width:34px;height:34px;border-radius:11px;flex:0 0 auto;
+    background:linear-gradient(150deg,var(--accent),#ff5f6d); display:grid; place-items:center;
+    box-shadow:0 6px 16px rgba(255,95,109,.28);
+  }
+  .mark svg{width:20px;height:20px;display:block}
+  .brand h1{margin:0; font-size:16.5px; font-weight:800; letter-spacing:-.2px; white-space:nowrap}
+  .brand p{margin:0; font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .lang{margin-left:auto; display:flex; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:3px; flex:0 0 auto}
+  .lang button{
+    border:0; background:transparent; color:var(--muted); font-size:12.5px; font-weight:700;
+    padding:5px 11px; border-radius:999px; line-height:1.2;
+  }
+  .lang button.on{background:var(--accent); color:#20120a}
+
+  main{max-width:1120px; margin:0 auto; padding:0 12px}
+  .tab-page{display:none; animation:fade .28s ease}
+  .tab-page.on{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+  /* map tab */
+  .map-wrap{position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow); background:var(--panel)}
+  #map{height:44vh; min-height:290px; width:100%; background:#0f1a2b}
+  .map-hint{
+    position:absolute; left:10px; top:10px; z-index:500; max-width:calc(100% - 20px);
+    background:rgba(10,17,29,.86); border:1px solid var(--line); color:#cfdcec;
+    padding:6px 10px; border-radius:999px; font-size:11.5px; backdrop-filter:blur(6px);
+  }
+  #map:fullscreen{height:100vh}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; padding:12px 2px 4px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto; border:1px solid var(--line); background:var(--panel); color:var(--muted);
+    padding:7px 13px; border-radius:999px; font-size:13px; font-weight:650;
+  }
+  .chip.on{background:var(--accent-soft); border-color:rgba(255,138,61,.55); color:#ffc79b}
+  .list-head{display:flex; align-items:baseline; justify-content:space-between; padding:6px 2px 8px}
+  .list-head b{font-size:13.5px; color:var(--ink)}
+  .list-head span{font-size:11.5px; color:var(--dim)}
+
+  .spot{
+    background:linear-gradient(180deg, var(--card), var(--card2));
+    border:1px solid var(--line); border-radius:var(--radius); padding:13px 14px 12px; margin-bottom:10px;
+  }
+  .spot.hl{border-color:rgba(255,138,61,.7); box-shadow:0 0 0 3px rgba(255,138,61,.14)}
+  .spot-top{display:flex; align-items:flex-start; gap:9px}
+  .num{
+    flex:0 0 auto; width:23px;height:23px;border-radius:8px; display:grid;place-items:center;
+    font-size:11.5px; font-weight:800; color:#0a1120; margin-top:2px;
+  }
+  .spot h3{margin:0; font-size:16px; font-weight:800; letter-spacing:-.2px; line-height:1.35}
+  .spot h3 small{display:block; font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:0; margin-top:1px}
+  .spot .rows{margin:9px 0 0; display:grid; gap:4px; padding-left:32px}
+  .row{display:flex; gap:8px; font-size:12.8px; color:#c8d6e6; line-height:1.5}
+  .row .k{flex:0 0 auto; color:var(--dim); font-size:11.5px; font-weight:700; min-width:52px; padding-top:1px}
+  .row .v{min-width:0}
+  .fee{color:#ffd08a}
+  .acts{display:flex; gap:8px; margin-top:11px; padding-left:32px}
+  .btn{
+    border:1px solid var(--line); background:#0f1a2b; color:var(--ink); border-radius:11px;
+    padding:9px 12px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(160deg,#ff9a52,#ff6a45); border-color:transparent; color:#26140c}
+  .btn.ghost{color:#bcd0e6}
+
+  /* sections (tabs 2,3) */
+  .hero{
+    border-radius:var(--radius); padding:16px; margin:6px 0 14px; border:1px solid var(--line);
+    background:linear-gradient(140deg, rgba(255,138,61,.16), rgba(47,211,164,.08) 60%, transparent), var(--panel);
+  }
+  .hero h2{margin:0 0 4px; font-size:19px; letter-spacing:-.3px}
+  .hero p{margin:0; color:var(--muted); font-size:12.8px}
+  section.card{
+    background:linear-gradient(180deg, var(--card), var(--card2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:14px; margin-bottom:12px;
+  }
+  section.card > h3{margin:0 0 2px; font-size:15.5px; display:flex; align-items:center; gap:7px}
+  section.card > h3 .ico{font-size:16px}
+  section.card > p.sub{margin:0 0 11px; color:var(--dim); font-size:11.8px}
+
+  .alist{display:grid}
+  .arow{display:grid; grid-template-columns:1fr auto; gap:3px 10px; padding:10px 2px; border-bottom:1px solid rgba(37,52,76,.7)}
+  .arow:last-child{border-bottom:0}
+  .arow .dest{grid-column:1; font-weight:780; font-size:13.6px; letter-spacing:-.1px}
+  .arow .fare{grid-column:2; text-align:right; color:#ffd08a; font-weight:800; font-size:13px; white-space:nowrap}
+  .arow .line{grid-column:1/-1; color:#adc0d4; font-size:12.4px; line-height:1.45}
+  .arow .tmline{grid-column:1/-1; color:var(--dim); font-size:11.8px}
+  .arow .tmline b{color:#cfdfef; font-weight:700}
+  @media (min-width:900px){
+    .arow{grid-template-columns:1.05fr 1.6fr 110px 130px; align-items:center; padding:9px 2px}
+    .arow .dest{grid-column:1; grid-row:1}
+    .arow .line{grid-column:2; grid-row:1}
+    .arow .tmline{grid-column:3; grid-row:1}
+    .arow .fare{grid-column:4; grid-row:1; text-align:left}
+  }
+  table.fare{width:100%; border-collapse:collapse; font-size:12.8px}
+  table.fare th, table.fare td{text-align:left; padding:8px 6px; border-bottom:1px solid rgba(37,52,76,.7); vertical-align:top}
+  table.fare th{color:var(--dim); font-size:11px; font-weight:800; letter-spacing:.02em; text-transform:uppercase}
+  table.fare tr:last-child td{border-bottom:0}
+  table.fare td.ln{white-space:nowrap; font-weight:700; color:#ffd08a}
+  table.fare td.tm{white-space:nowrap; color:#b9cbe0}
+  .scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+  .steps{display:grid; gap:11px; margin-top:2px}
+  .step{display:flex; gap:10px}
+  .step .n{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    background:var(--accent-soft); color:#ffbe8c; font-size:11.5px; font-weight:800; margin-top:2px;
+    border:1px solid rgba(255,138,61,.4);
+  }
+  .step b{display:block; font-size:13.6px; margin-bottom:2px}
+  .step p{margin:0; color:#b9cbe0; font-size:12.7px}
+  .step p + p{margin-top:5px}
+  .note{
+    margin-top:10px; border-left:3px solid rgba(255,138,61,.6); background:rgba(255,138,61,.07);
+    padding:8px 11px; border-radius:0 10px 10px 0; font-size:12.4px; color:#e4d3c4;
+  }
+  .note.teal{border-left-color:rgba(47,211,164,.6); background:rgba(47,211,164,.07); color:#c9ecdf}
+  .kv{display:flex; gap:10px; align-items:baseline; font-size:13px; padding:7px 0; border-bottom:1px dashed rgba(37,52,76,.8)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{flex:0 0 92px; color:var(--dim); font-size:11.8px; font-weight:700}
+  .kv .v{flex:1; min-width:0}
+  .big{font-size:15px; font-weight:800; color:#ffd08a}
+
+  select.calc{
+    width:100%; appearance:none; background:#0f1a2b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393a4bb' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+    color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:11px 34px 11px 12px; font-size:14px; font-weight:650;
+  }
+  .calc-out{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap}
+  .pill{flex:1 1 130px; background:#0f1a2b; border:1px solid var(--line); border-radius:12px; padding:10px 12px}
+  .pill span{display:block; font-size:11px; color:var(--dim); font-weight:700; margin-bottom:2px}
+  .pill b{font-size:16px; letter-spacing:-.2px}
+
+  .fc-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:9px}
+  .fc{
+    text-align:left; border:1px solid var(--line); background:#0f1a2b; border-radius:13px;
+    padding:11px 12px; color:var(--ink);
+  }
+  .fc b{display:block; font-size:13.2px; line-height:1.4}
+  .fc span{display:block; margin-top:3px; font-size:11.5px; color:var(--dim)}
+
+  /* bottom nav */
+  nav.tabs{
+    position:fixed; left:0; right:0; bottom:0; z-index:700;
+    padding:6px 10px calc(6px + env(safe-area-inset-bottom));
+    background:rgba(10,16,28,.94); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line); display:flex; gap:6px; justify-content:center;
+  }
+  nav.tabs .inner{display:flex; gap:6px; width:100%; max-width:520px}
+  nav.tabs button{
+    flex:1; border:1px solid transparent; background:transparent; color:var(--dim);
+    border-radius:13px; padding:7px 4px 8px; display:grid; place-items:center; gap:1px;
+  }
+  nav.tabs button .ti{font-size:18px; line-height:1}
+  nav.tabs button .tl{font-size:11px; font-weight:750; letter-spacing:-.1px}
+  nav.tabs button.on{background:var(--accent-soft); border-color:rgba(255,138,61,.4); color:#ffc79b}
+
+  /* driver modal */
+  .modal{
+    position:fixed; inset:0; z-index:1000; display:none; background:#07101d;
+    padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    flex-direction:column;
+  }
+  .modal.on{display:flex}
+  .modal .kick{font-size:12.5px; color:#9db0c7; letter-spacing:.04em}
+  .modal .body{flex:1; display:flex; flex-direction:column; justify-content:center; padding:8px 0}
+  .modal .plate{
+    width:100%; max-width:680px; margin:0 auto; text-align:center;
+    border:1px solid rgba(255,255,255,.09); border-radius:26px; padding:34px 20px 30px;
+    background:radial-gradient(120% 90% at 50% 0%, rgba(255,138,61,.12), transparent 62%), #0d1726;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .modal .tag{display:inline-block; font-size:11px; font-weight:800; letter-spacing:.16em; color:#ffbc90;
+    background:rgba(255,138,61,.14); border:1px solid rgba(255,138,61,.32); padding:3px 10px; border-radius:999px; margin-bottom:14px}
+  .modal .ko{font-size:clamp(36px, 10.4vw, 64px); font-weight:900; letter-spacing:-1.2px; line-height:1.16; color:#fff}
+  .modal .zh{font-size:14.5px; color:#93a7bf; margin-top:8px; letter-spacing:.02em}
+  .modal .addr{
+    margin:18px auto 0; display:inline-block;
+    font-size:clamp(15px, 4.2vw, 22px); font-weight:750; color:#ffd08a; line-height:1.5;
+    word-break:keep-all; padding:9px 14px; border-radius:12px; background:rgba(255,208,138,.08);
+    border:1px solid rgba(255,208,138,.22);
+  }
+  .modal .ask{margin-top:24px; font-size:clamp(20px,6vw,27px); font-weight:800; color:#9ff0d3}
+  .modal .sub{margin-top:6px; font-size:12.5px; color:#7d90a8}
+  .modal .foot{display:flex; gap:9px; width:100%; max-width:680px; margin:0 auto; flex:0 0 auto}
+  .modal .foot .btn{flex:1; justify-content:center; padding:14px; font-size:15px}
+  .modal .x{
+    position:absolute; right:12px; top:calc(10px + env(safe-area-inset-top)); width:38px;height:38px;
+    border-radius:50%; border:1px solid var(--line); background:rgba(21,33,53,.9); color:#cfe0f2; font-size:18px;
+  }
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom));
+    background:#eaf3ff; color:#0b1220; font-size:13px; font-weight:800; padding:10px 16px; border-radius:999px;
+    box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:1200;
+  }
+  .toast.on{opacity:1; transform:translateX(-50%) translateY(-4px)}
+
+  footer.foot{max-width:1120px; margin:18px auto 6px; padding:0 14px; font-size:11.5px; color:var(--dim); line-height:1.7}
+  footer.foot b{color:#a9bccf}
+
+  /* Leaflet dark tuning */
+  .leaflet-container{background:#0f1a2b; font-family:var(--font)}
+  .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.93) contrast(.86) saturate(.72)}
+  .leaflet-bar{border:1px solid var(--line) !important; box-shadow:none !important}
+  .leaflet-bar a{background:#132238 !important; color:#dbe8f7 !important; border-color:var(--line) !important}
+  .leaflet-bar a:hover{background:#1a2c46 !important}
+  .leaflet-popup-content-wrapper{background:#152135; color:var(--ink); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow)}
+  .leaflet-popup-tip{background:#152135; border:1px solid var(--line)}
+  .leaflet-popup-content{margin:11px 13px; font-size:13px}
+  .leaflet-popup-content b{font-size:14.5px}
+  .leaflet-container a.leaflet-popup-close-button{color:#93a4bb}
+  .leaflet-control-attribution{background:rgba(9,15,26,.78) !important; color:#7f93ab !important; font-size:10px !important; padding:2px 6px !important}
+  .leaflet-control-attribution a{color:#a9c0d8 !important}
+  .pinwrap{width:44px;height:44px;display:grid;place-items:center}
+  .pin{
+    width:28px;height:28px;border-radius:50% 50% 50% 6px; transform:rotate(-45deg);
+    border:2px solid rgba(255,255,255,.88); box-shadow:0 3px 10px rgba(0,0,0,.55);
+    display:grid; place-items:center; transition:transform .15s;
+  }
+  .pin:hover{transform:rotate(-45deg) scale(1.12)}
+  .pin span{transform:rotate(45deg); font-size:11px; font-weight:900; color:#0a1120}
+  .pin.dim{opacity:.32; filter:grayscale(.4)}
+
+  @media (min-width:900px){
+    body{font-size:16px}
+    #tab-move, #tab-pay{max-width:880px; margin:0 auto}
+    #tab-map{display:none}
+    #tab-map.on{display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,1fr); gap:16px; align-items:start}
+    .map-wrap{position:sticky; top:66px}
+    #map{height:calc(100vh - 190px); min-height:420px}
+    .list-wrap{max-height:none}
+    .spot:hover{border-color:rgba(255,138,61,.4)}
+    .brand h1{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.6c3.6 0 6.4 2.75 6.4 6.1 0 4.8-6.4 12.7-6.4 12.7S5.6 13.5 5.6 8.7c0-3.35 2.8-6.1 6.4-6.1z" fill="#2b1408"/><circle cx="12" cy="8.6" r="2.5" fill="#ffd9b8"/></svg>
+    </div>
+    <div>
+      <h1 id="h-title">济州现场地图</h1>
+      <p id="h-sub">免安装 · 简体中文 · 打车给司机看</p>
+    </div>
+  </div>
+  <div class="lang" role="group" aria-label="language">
+    <button id="lang-zh" class="on" onclick="setLang('zh')">中文</button>
+    <button id="lang-ko" onclick="setLang('ko')">한국어</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ TAB 1 : MAP ============ -->
+  <section id="tab-map" class="tab-page on">
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="map-hint" id="map-hint">点选地图编号 → 看详情</div>
+    </div>
+    <div class="list-wrap">
+      <div class="chips" id="chips"></div>
+      <div class="list-head"><b id="list-title">景点</b><span id="list-sub"></span></div>
+      <div id="spots"></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2 : MOVE ============ -->
+  <section id="tab-move" class="tab-page">
+    <div class="hero">
+      <h2 id="mv-h1">从机场出发</h2>
+      <p id="mv-h1s">巴士 / 出租车 / 时间 / 票价（2026年11月确认）</p>
+    </div>
+
+    <section class="card">
+      <h3><span class="ico">🚌</span><span id="mv-a">机场 → 主要地区</span></h3>
+      <p class="sub" id="mv-a-sub">101·111·112 快线在 GATE 2 前，600 机场大巴在 GATE 5 前</p>
+      <div class="alist" id="airport-list"></div>
+      <div class="note" id="mv-note1">快线(红色)按距离加价：上车刷 2,000원，下车再按里程加，最远 3,000원。</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">💳</span><span id="mv-b">公交车怎么付钱</span></h3>
+      <p class="sub" id="mv-b-sub">没有交通卡也能坐 —— 手机扫码即可</p>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div>
+          <b id="bus-s1t">用支付宝/微信扫码付</b>
+          <p id="bus-s1a">上车后，找司机旁边柱子上的 QR。用支付宝「扫一扫」→ 输入票价（市内 1,150원 / 快线 2,000원）→ 把付款完成画面给司机看。</p>
+          <p id="bus-s1b">也可以用 Visa/Mastercard 等境外非接触卡，直接在刷卡机上贴一下（2025年8月起）。</p>
+        </div></div>
+        <div class="step"><div class="n">2</div><div>
+          <b id="bus-s2t">下车也要刷一次</b>
+          <p id="bus-s2">下车刷卡（하차 태그）。40 分钟内换乘最多 2 次有折扣；快线即使换乘，下车时里程费仍会另收。</p>
+        </div></div>
+        <div class="step"><div class="n">3</div><div>
+          <b id="bus-s3t">车上不收现金</b>
+          <p id="bus-s3">2024年10月起济州所有公交取消现金（车内钱箱已拆除）。交通卡可在便利店购买、充值。</p>
+        </div></div>
+      </div>
+      <table class="fare" style="margin-top:12px">
+        <thead><tr><th id="ft-th1">种类</th><th id="ft-th2">成人（刷卡）</th></tr></thead>
+        <tbody>
+          <tr><td id="ft1">市内·支线·景点循环</td><td class="ln">1,150원</td></tr>
+          <tr><td id="ft2">快线（20km 内）</td><td class="ln">2,000원</td></tr>
+          <tr><td id="ft3">快线（40km 以上）</td><td class="ln">3,000원</td></tr>
+          <tr><td id="ft4">机场大巴 600</td><td class="ln">4,500 ~ 5,500원</td></tr>
+          <tr><td id="ft5">乡村巴士（牛岛等）</td><td class="ln">950원</td></tr>
+        </tbody>
+      </table>
+      <div class="note teal" id="mv-note2">实时到站：KakaoMap / NaverMap（输入韩文站名）或 bus.jeju.go.kr。乡村线路 20~60 分钟一班，别卡点。</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">🚕</span><span id="mv-c">出租车</span></h3>
+      <p class="sub" id="mv-c-sub">起步价 4,300원（2km）· 深夜加成 20% · 叫车用 k.ride</p>
+      <div class="kv"><span class="k" id="tx-k1">起步价</span><span class="v" id="tx-v1">4,300원（含 2km）</span></div>
+      <div class="kv"><span class="k" id="tx-k2">距离</span><span class="v" id="tx-v2">每 126m 加 100원</span></div>
+      <div class="kv"><span class="k" id="tx-k3">夜间</span><span class="v" id="tx-v3">23:00–04:00 加价 20%</span></div>
+      <div class="kv"><span class="k" id="tx-k4">长途</span><span class="v" id="tx-v4">超过 20km 距离费加价 20%</span></div>
+      <div class="kv"><span class="k" id="tx-k5">叫车</span><span class="v" id="tx-v5">k.ride（中文界面 · 支付宝+/微信支付）· Kakao T（可用境外号码，选「直接付给司机」）</span></div>
+      <p class="sub" id="calc-label" style="margin:13px 0 7px">从机场到这里的预估车费（按里程估算，不含堵车）</p>
+      <select class="calc" id="calc-sel" aria-label="destination"></select>
+      <div class="calc-out">
+        <div class="pill"><span id="calc-t1">时间</span><b id="calc-min">—</b></div>
+        <div class="pill"><span id="calc-t2">预估车费</span><b id="calc-fare">—</b></div>
+        <div class="pill"><span id="calc-t3">里程</span><b id="calc-km">—</b></div>
+      </div>
+      <div class="note" id="mv-note3">司机可能不接受境外卡。准备好现金或说「카드 될까요?（能刷卡吗）」，也可以让司机直接收现金。</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">🚫</span><span id="mv-d">关于租车 / 驾照</span></h3>
+      <div class="steps">
+        <div class="step"><div class="n">!</div><div>
+          <b id="car-t">中国驾照在韩国不能开车</b>
+          <p id="car-p">中国未加入《日内瓦道路交通公约》，因此中国驾照 + 国际驾照（IDP）都无法在韩国使用，济州租车公司不会租给中国游客（2026年7月济州道讨论过放宽，但官方明确「不是已决定的政策」）。</p>
+          <p id="car-p2">替代：公交 + 出租车；牛岛上可租电动自行车/三轮电动车（需看保险条款）；多人可包车（带中文司机）。</p>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">🪧</span><span id="mv-e">给司机看的大字卡片</span></h3>
+      <p class="sub" id="mv-e-sub">点一下，全屏韩文大字</p>
+      <div class="fc-grid" id="fc-grid"></div>
+    </section>
+  </section>
+
+  <!-- ============ TAB 3 : PAY ============ -->
+  <section id="tab-pay" class="tab-page">
+    <div class="hero">
+      <h2 id="py-h1">支付 & 实战贴士</h2>
+      <p id="py-h1s">支付宝/微信 · 退税 · 上网 · 紧急电话（2026年11月确认）</p>
+    </div>
+
+    <section class="card">
+      <h3><span class="ico">💰</span><span id="py-a">支付宝 / 微信支付能用在哪</span></h3>
+      <div class="steps">
+        <div class="step"><div class="n">✓</div><div>
+          <b id="pay-a1t">全岛公交车都能扫</b>
+          <p id="pay-a1">2024年8月起，济州 868 辆公交车全部支持支付宝、微信支付等 9 个国家 17 个境外支付 App 扫码付车费。</p>
+        </div></div>
+        <div class="step"><div class="n">✓</div><div>
+          <b id="pay-a2t">市场、小商户（ZERO PAY 加盟店）</b>
+          <p id="pay-a2">韩国简易支付 ZERO PAY 与支付宝（Alipay+）互通，东门市场、偶来市场、小餐馆结账时先问「알리페이 돼요?（能用支付宝吗）」，有 Alipay+ 或 ZERO PAY 标志就能扫。</p>
+        </div></div>
+        <div class="step"><div class="n">✓</div><div>
+          <b id="pay-a3t">便利店、Olive Young、免税店、大部分连锁</b>
+          <p id="pay-a3">CU、GS25、7-Eleven、Olive Young、新罗/乐天免税店基本都收支付宝；大商场也能刷银联/Visa。</p>
+        </div></div>
+        <div class="step"><div class="n">!</div><div>
+          <b id="pay-a4t">手续费</b>
+          <p id="pay-a4">支付宝绑定境外卡：单笔 200 元人民币以内免手续费，超过部分约 3%。微信支付同样可绑境外卡。小额分次付更划算。</p>
+        </div></div>
+      </div>
+      <div class="note" id="py-note1">建议随身带 3~5 万韩元现金：老市场小摊、乡村食堂、部分出租车只收现金。机场到达层有 ATM 和换钱所。</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">🧾</span><span id="py-b">退税 (Tax Refund)</span></h3>
+      <div class="kv"><span class="k" id="rf-k1">最低金额</span><span class="v" id="rf-v1">单店单日 15,000원 以上（出示护照）</span></div>
+      <div class="kv"><span class="k" id="rf-k2">单笔上限</span><span class="v" id="rf-v2">100 万원 未满（即享退税）</span></div>
+      <div class="kv"><span class="k" id="rf-k3">累计上限</span><span class="v" id="rf-v3">停留期间 500 万원 以下</span></div>
+      <div class="kv"><span class="k" id="rf-k4">哪里办</span><span class="v" id="rf-v4">门口/收银台有「Tax Free」标志的店 → 当场扣除（即享退税）；否则拿退税单，出境前在机场退税柜台/自助机办理</span></div>
+      <div class="kv"><span class="k" id="rf-k5">带什么</span><span class="v" id="rf-v5">护照 + 收据 + 商品（机场退税需海关确认）</span></div>
+      <div class="note" id="py-note2">3 万원 购物约退 2,000원，10 万원 约退 7,000원。超过 100 万원 的单据不能在店里即享，只能走机场退税。烟酒、食品熟食、已开封商品不在退税范围。</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">📶</span><span id="py-c">上网 / 电话</span></h3>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div>
+          <b id="net-t1">eSIM（推荐）</b>
+          <p id="net-p1">出发前在国内买好韩国 eSIM，落地开关数据即可用，不用排队。手机需支持 eSIM 且已解锁。</p>
+        </div></div>
+        <div class="step"><div class="n">2</div><div>
+          <b id="net-t2">实体 SIM</b>
+          <p id="net-p2">济州机场到达层（1F）有运营商柜台和便利店，可买短期卡；需出示护照。</p>
+        </div></div>
+        <div class="step"><div class="n">3</div><div>
+          <b id="net-t3">免费 Wi-Fi</b>
+          <p id="net-p3">机场、咖啡店、便利店、大部分酒店免费。地图和本页可提前截图/保存，隧道和山间会没信号。</p>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">🆘</span><span id="py-d">紧急 & 求助电话</span></h3>
+      <div class="kv"><span class="k">1330</span><span class="v" id="em-1330">旅游翻译热线（中文）07:00–24:00 · 韩国境内直拨 1330，境外 +82-2-1330 · 也可在微信加「1330观光咨询」文字咨询</span></div>
+      <div class="kv"><span class="k">119</span><span class="v" id="em-119">急救 / 消防</span></div>
+      <div class="kv"><span class="k">112</span><span class="v" id="em-112">警察</span></div>
+      <div class="kv"><span class="k" id="em-k2">宰客投诉</span><span class="v" id="em-v2">1330 或 touristcomplaint.or.kr（出租车多收钱、住宿乱收费）</span></div>
+    </section>
+
+    <section class="card">
+      <h3><span class="ico">💡</span><span id="py-e">小贴士</span></h3>
+      <div class="kv"><span class="k" id="tip-k1">小费</span><span class="v" id="tip-v1">韩国不收小费，账单里已含税和服务</span></div>
+      <div class="kv"><span class="k" id="tip-k2">黑猪肉</span><span class="v" id="tip-v2">按「1人份」点，先看价格表（有的店 1 人份 2 万원 以上），两人点 2 份足够</span></div>
+      <div class="kv"><span class="k" id="tip-k3">营业时间</span><span class="v" id="tip-v3">很多店 15:00–17:00 休息；餐厅 21:00 后多数关门</span></div>
+      <div class="kv"><span class="k" id="tip-k4">垃圾</span><span class="v" id="tip-v4">街头垃圾桶少，便利店有分类垃圾箱；随地丢烟头会被罚款</span></div>
+      <div class="kv"><span class="k" id="tip-k5">天气</span><span class="v" id="tip-v5">海岛风大，冬天体感更冷；山间（汉拿山、1100高地）与海边温差大，带件外套</span></div>
+    </section>
+  </section>
+</main>
+
+<footer class="foot">
+  <div><b id="ftr-date">数据确认日</b> <span id="ftr-date-v">2026-11-17</span></div>
+  <div id="ftr-src">来源：济州巴士信息系统(bus.jeju.go.kr) · 济州观光协会观光地票价表 · 西归浦市 e-Ticket · 济州世界遗产本部 · 韩国观光公社 1330</div>
+  <div id="ftr-note">本页是原型（第 1 版）。票价·时间可能变动，出发前请再确认一次。</div>
+  <div style="margin-top:6px;opacity:.8" id="ftr-map">地图 © OpenStreetMap 贡献者 · 中国大陆网络下地图瓦片可能加载慢，景点列表不受影响</div>
+</footer>
+
+<nav class="tabs" role="tablist">
+  <div class="inner">
+    <button id="tabbtn-map" class="on" onclick="setTab('map')"><span class="ti">🗺️</span><span class="tl" id="tb1">地图</span></button>
+    <button id="tabbtn-move" onclick="setTab('move')"><span class="ti">🚌</span><span class="tl" id="tb2">出行</span></button>
+    <button id="tabbtn-pay" onclick="setTab('pay')"><span class="ti">💳</span><span class="tl" id="tb3">支付·贴士</span></button>
+  </div>
+</nav>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <button class="x" onclick="closeModal()" aria-label="close">✕</button>
+  <div class="kick" id="m-kick">请把这一屏给司机看</div>
+    <div class="body"><div class="plate">
+      <div class="tag" id="m-tag">목적지</div>
+      <div class="ko" id="m-ko"></div>
+      <div class="zh" id="m-zh"></div>
+      <div class="addr" id="m-addr"></div>
+      <div class="ask" id="m-ask">여기로 가 주세요</div>
+      <div class="sub" id="m-sub">请带我去这里</div>
+    </div></div>
+  <div class="foot">
+    <button class="btn ghost" onclick="copyAddr()" id="m-copy">주소 복사</button>
+    <button class="btn primary" onclick="closeModal()" id="m-close">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="leaflet.js"></script>
+<script>
+/* =========================================================
+   济州现场地图 — 1st prototype
+   data checked 2026-11-17 (bus.jeju.go.kr, 제주관광협회, 서귀포 e티켓, 제주세계유산본부, KTO)
+   ========================================================= */
+
+const SPOTS = [
+  {id:'airport', zh:'济州国际机场', ko:'제주국제공항', cat:'airport', region:'city',
+   lat:33.5068, lng:126.4927, addr:'제주특별자치도 제주시 공항로 2',
+   hours:{zh:'按航班时刻运行', ko:'항공편 운항 시간대'}, fee:{zh:'—', ko:'—'},
+   bus:{zh:'GATE 1·2 前：101·111·112 / GATE 5 前：600·800 机场大巴', ko:'GATE 1·2 앞: 101·111·112 / GATE 5 앞: 600·800 리무진'},
+   dist:0, min:0},
+
+  {id:'dongmun', zh:'东门传统市场', ko:'동문재래시장', cat:'market', region:'city',
+   lat:33.5128, lng:126.5283, addr:'제주특별자치도 제주시 동문로 16',
+   hours:{zh:'07:00–21:00（各店不同）· 夜市 11–4月 18:00 / 5–10月 19:00 起 ~24:00', ko:'07:00–21:00(점포별 상이) · 야시장 18:00(11–4월)·19:00(5–10월)~24:00'},
+   fee:{zh:'免费入场', ko:'무료'},
+   bus:{zh:'市内巴士 约15–20分 · 1,150원', ko:'시내버스 약 15–20분 · 1,150원'},
+   dist:4.8, min:16},
+
+  {id:'yongduam', zh:'龙头岩', ko:'용두암', cat:'nature', region:'city',
+   lat:33.5161, lng:126.5120, addr:'제주특별자치도 제주시 용두암길 15',
+   hours:{zh:'全天开放', ko:'상시 개방'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'市内巴士 约10–15分 · 1,150원（离机场很近）', ko:'시내버스 약 10–15분 · 1,150원'},
+   dist:3.7, min:11},
+
+  {id:'heukdwaeji', zh:'黑猪肉一条街', ko:'흑돼지거리', cat:'market', region:'city',
+   lat:33.5155, lng:126.5268, addr:'제주특별자치도 제주시 관덕로15길 일대(일도일동)',
+   hours:{zh:'傍晚开始营业（各店不同，多数到 24:00）', ko:'저녁부터 영업(점포별 상이)'},
+   fee:{zh:'免费（用餐另计）', ko:'무료(식사 별도)'},
+   bus:{zh:'东门市场步行 5 分 · 市内巴士 1,150원', ko:'동문시장에서 도보 5분 · 시내버스 1,150원'},
+   dist:4.7, min:17},
+
+  {id:'handam', zh:'涯月 · 汉潭海岸', ko:'한담해변', cat:'beach', region:'west',
+   lat:33.4622, lng:126.3102, addr:'제주특별자치도 제주시 애월읍 애월리',
+   hours:{zh:'全天开放（海边咖啡街）', ko:'상시 개방(해안 카페거리)'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'102 快线 约40分 · 2,000원~', ko:'102번 급행 약 40분 · 2,000원~'},
+   dist:20.0, min:33},
+
+  {id:'gwakji', zh:'郭支海水浴场', ko:'곽지해수욕장', cat:'beach', region:'west',
+   lat:33.4506, lng:126.3047, addr:'제주특별자치도 제주시 애월읍 곽지리 1565',
+   hours:{zh:'全天开放（海水浴 6–9月）', ko:'상시 개방(해수욕 6–9월)'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'102 快线 约45分 · 2,000원~', ko:'102번 급행 약 45분 · 2,000원~'},
+   dist:20.5, min:35},
+
+  {id:'osulloc', zh:'雪绿茶博物馆', ko:'오설록 티뮤지엄', cat:'culture', region:'west',
+   lat:33.3059, lng:126.2894, addr:'제주특별자치도 서귀포시 안덕면 신화역사로 15',
+   hours:{zh:'旺季 09:00–19:00 / 淡季 09:00–18:00 · 全年无休', ko:'하절기 09:00–19:00 / 동절기 09:00–18:00 · 연중무휴'},
+   fee:{zh:'免费（体验另收费）', ko:'무료(체험 별도)'},
+   bus:{zh:'151 快线 约70分 · 2,000원', ko:'151번 급행 약 70분 · 2,000원'},
+   dist:33.0, min:39},
+
+  {id:'hamdeok', zh:'咸德海水浴场', ko:'함덕해수욕장', cat:'beach', region:'east',
+   lat:33.5431, lng:126.6692, addr:'제주특별자치도 제주시 조천읍 조함해안로 525',
+   hours:{zh:'全天开放（海水浴 6–9月）', ko:'상시 개방(해수욕 6–9월)'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'101 快线 约40分 · 2,000원（10 站）', ko:'101번 급행 약 40분 · 2,000원'},
+   dist:19.9, min:40},
+
+  {id:'manjanggul', zh:'万丈窟', ko:'만장굴', cat:'nature', region:'east',
+   lat:33.5282, lng:126.7718, addr:'제주특별자치도 제주시 구좌읍 만장굴길 182',
+   hours:{zh:'09:00–18:00（售票至 17:00）· 每月第一个周三休', ko:'09:00–18:00(매표 17:00) · 매월 첫째 수요일 휴무'},
+   fee:{zh:'4,000원（青少年·儿童 2,000원）', ko:'4,000원(청소년·어린이 2,000원)'},
+   bus:{zh:'101 快线 → 金宁换乘 711-1·711-2 · 约70分', ko:'101번 급행 → 김녕 환승 711-1·711-2 · 약 70분'},
+   dist:33.1, min:57},
+
+  {id:'bijarim', zh:'榧子林', ko:'비자림', cat:'nature', region:'east',
+   lat:33.4904, lng:126.8100, addr:'제주특별자치도 제주시 구좌읍 비자숲길 55',
+   hours:{zh:'09:00–18:00（入场至 17:00）· 全年无休', ko:'09:00–18:00(입장마감 17:00) · 연중무휴'},
+   fee:{zh:'3,000원（青少年·儿童 1,500원）', ko:'3,000원(청소년·어린이 1,500원)'},
+   bus:{zh:'101 快线 → 细花·坪岱方向换乘支线 · 约90分（打车更快）', ko:'101번 급행 → 세화·평대 방면 지선 환승 · 약 90분'},
+   dist:37.8, min:55},
+
+  {id:'seongsan', zh:'城山日出峰', ko:'성산일출봉', cat:'nature', region:'east',
+   lat:33.4581, lng:126.9425, addr:'제주특별자치도 서귀포시 성산읍 일출로 284-12',
+   hours:{zh:'11–2月 06:00–18:00 / 3·4·9·10月 05:00–19:00 / 5–8月 04:30–20:00（售票提前1小时止）', ko:'11–2월 06:00–18:00 / 3·4·9·10월 05:00–19:00 / 5–8월 04:30–20:00(매표 1시간 전 마감)'},
+   fee:{zh:'5,000원（13–24岁·儿童 2,500원）· 每月第一个周一休', ko:'5,000원(청소년·어린이 2,500원) · 매월 첫째 월요일 휴무'},
+   bus:{zh:'101 快线 约90–100分 · 2,000~3,000원', ko:'101번 급행 약 90–100분 · 2,000~3,000원'},
+   dist:47.5, min:69},
+
+  {id:'seopjikoji', zh:'涉地可支', ko:'섭지코지', cat:'nature', region:'east',
+   lat:33.4239, lng:126.9306, addr:'제주특별자치도 서귀포시 성산읍 섭지코지로 107',
+   hours:{zh:'全天开放', ko:'상시 개방'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'101 快线 → 城山日出峰入口下车后打车 5–10分', ko:'101번 급행 → 성산일출봉입구 하차 후 택시 5–10분'},
+   dist:49.3, min:72},
+
+  {id:'udo', zh:'牛岛', ko:'우도', cat:'island', region:'east',
+   lat:33.5044, lng:126.9556, addr:'제주특별자치도 제주시 우도면 (성산항 종합여객터미널 출발)',
+   hours:{zh:'渡轮 淡季 08:00–17:00 / 旺季 07:00–18:30 · 每30分一班 · 船程15分', ko:'도항선 비수기 08:00–17:00 / 성수기 07:00–18:30 · 30분 간격 · 15분 소요'},
+   fee:{zh:'往返 11,000원（含道立公园门票）· 需带护照', ko:'왕복 11,000원(도립공원 입장료 포함) · 신분증 필요'},
+   bus:{zh:'城山港客运码头(성산등용로 112-7) 现场购票、写登船申报后登船 · 租车不能上岛', ko:'성산항 종합여객터미널(성산등용로 112-7) 현장 매표 · 승선신고서 작성 · 렌터카 반입 제한'},
+   dist:53.5, min:80},
+
+  {id:'jusangjeolli', zh:'柱状节理带', ko:'주상절리대', cat:'nature', region:'south',
+   lat:33.2368, lng:126.4255, addr:'제주특별자치도 서귀포시 이어도로 36-30',
+   hours:{zh:'09:00–17:50（入场至 17:30）', ko:'09:00–17:50(입장마감 17:30)'},
+   fee:{zh:'2,000원（青少年·儿童 1,000원）', ko:'2,000원(청소년·어린이 1,000원)'},
+   bus:{zh:'600 机场大巴 → 会展中心下车 步行15分', ko:'600번 리무진 → 컨벤션센터 하차 도보 15분'},
+   dist:42.2, min:50},
+
+  {id:'cheonjiyeon', zh:'天地渊瀑布', ko:'천지연폭포', cat:'nature', region:'south',
+   lat:33.2469, lng:126.5544, addr:'제주특별자치도 서귀포시 남성중로 2-15',
+   hours:{zh:'09:00–22:00（入场至 21:20）· 夜间有灯光', ko:'09:00–22:00(입장마감 21:20) · 야간 조명'},
+   fee:{zh:'2,000원（青少年·儿童 1,000원）', ko:'2,000원(청소년·어린이 1,000원)'},
+   bus:{zh:'600 机场大巴 约90分 · 5,500원（或 181·182 快线）', ko:'600번 리무진 약 90분 · 5,500원(또는 181·182 급행)'},
+   dist:52.1, min:66},
+
+  {id:'jungmun', zh:'中文 · 穗达海水浴场', ko:'중문색달해수욕장', cat:'beach', region:'south',
+   lat:33.2450, lng:126.4115, addr:'제주특별자치도 서귀포시 색달동 3039',
+   hours:{zh:'全天开放（海水浴 6–9月）', ko:'상시 개방(해수욕 6–9월)'}, fee:{zh:'免费', ko:'무료'},
+   bus:{zh:'600 机场大巴 约60分 · 4,500원', ko:'600번 리무진 약 60분 · 4,500원'},
+   dist:39.4, min:48},
+
+  {id:'olle', zh:'每日偶来市场', ko:'서귀포매일올레시장', cat:'market', region:'south',
+   lat:33.2487, lng:126.5641, addr:'제주특별자치도 서귀포시 중앙로62번길 18',
+   hours:{zh:'07:00–21:00（各店不同）· 全年无休', ko:'07:00~21:00(점포별 상이) · 연중무휴'},
+   fee:{zh:'免费入场', ko:'무료'},
+   bus:{zh:'600 机场大巴 约90分 · 5,500원', ko:'600번 리무진 약 90분 · 5,500원'},
+   dist:43.8, min:68}
+];
+
+const CAT = {
+  airport:{c:'#7c8cff', zh:'机场', ko:'공항'},
+  market: {c:'#ff8a3d', zh:'市场·美食', ko:'시장·먹거리'},
+  nature: {c:'#2fd3a4', zh:'自然', ko:'자연'},
+  beach:  {c:'#48b8f5', zh:'海边', ko:'해변'},
+  culture:{c:'#b48cf7', zh:'文化', ko:'문화'},
+  island: {c:'#f472b6', zh:'岛屿', ko:'섬'}
+};
+
+const REGIONS = [
+  {id:'all',  zh:'全部',        ko:'전체'},
+  {id:'city', zh:'济州市',      ko:'제주시'},
+  {id:'west', zh:'涯月·西部',   ko:'애월·서부'},
+  {id:'east', zh:'东部',        ko:'동부'},
+  {id:'south',zh:'中文·西归浦', ko:'중문·서귀포'}
+];
+
+/* airport → destination table: [zh, ko, line(zh), line(ko), time(zh), time(ko), fare] */
+const AIRPORT_ROWS = [
+  ['济州市内（东门市场）','제주시내(동문시장)','365-1 等市内巴士','365-1 등 시내버스','15–20 分','15–20분','1,150원'],
+  ['涯月 · 汉潭','애월·한담','102 快线','102 급행','约 40 分','약 40분','2,000원~'],
+  ['咸德海水浴场','함덕해수욕장','101 快线','101 급행','约 40 分','약 40분','2,000원'],
+  ['城山日出峰','성산일출봉','101 快线','101 급행','约 90–100 分','약 90–100분','2,000~3,000원'],
+  ['万丈窟','만장굴','101 → 金宁换乘 711-1/711-2','101 → 김녕 환승 711-1/711-2','约 70 分','약 70분','2,000원~'],
+  ['雪绿茶博物馆','오설록','151 快线','151 급행','约 70 分','약 70분','2,000원'],
+  ['中文旅游区（穗达海边）','중문(색달해변)','600 机场大巴','600 리무진','约 60 分','약 60분','4,500원'],
+  ['西归浦（天地渊·偶来市场）','서귀포(천지연·올레시장)','600 机场大巴','600 리무진','约 90 分','약 90분','5,500원'],
+  ['城山港（去牛岛）','성산항(우도)','101 快线 → 城山港','101 급행 → 성산항','约 100 分','약 100분','2,000~3,000원']
+];
+
+/* phrase cards for drivers */
+const FLASH = [
+  {ko:'여기로 가 주세요', zh:'请带我去这里', sub:'把手机画面给司机看'},
+  {ko:'제주국제공항으로 가 주세요', zh:'请去济州国际机场', sub:'回程用'},
+  {ko:'이 주소로 가 주세요', zh:'请去这个地址', sub:'用景点卡片的韩文地址'},
+  {ko:'여기서 세워 주세요', zh:'请在这里停车', sub:'中途下车'},
+  {ko:'트렁크 좀 열어 주세요', zh:'请帮忙开一下后备箱', sub:'行李多时'},
+  {ko:'카드로 결제할게요', zh:'我刷卡', sub:'能刷卡吗：카드 될까요?'},
+  {ko:'현금으로 낼게요', zh:'我付现金', sub:'现金支付'},
+  {ko:'영수증 주세요', zh:'请给我收据', sub:'报销/凭证'},
+  {ko:'화장실이 어디예요?', zh:'洗手间在哪里？', sub:'问路'},
+  {ko:'이 버스 성산일출봉에 가요?', zh:'这趟车到城山日出峰吗？', sub:'上车前确认'},
+  {ko:'다음 정류장에서 내릴게요', zh:'我在下一站下车', sub:'公交下车'},
+  {ko:'1330에 전화해 주세요', zh:'请打 1330（中文翻译）', sub:'沟通不了时'}
+];
+
+const T = {
+  zh:{
+    title:'济州现场地图', sub:'免安装 · 简体中文 · 打车给司机看',
+    tb1:'地图', tb2:'出行', tb3:'支付·贴士',
+    hint:'点选地图编号 → 看详情',
+    listTitle:'景点', listSub:n=>`共 ${n} 处`,
+    hours:'开放', fee:'门票', bus:'公交', taxi:'打车',
+    driver:'给司机看', copy:'复制韩文地址', copied:'已复制',
+    fareEst:(m,f,k)=>`约 ${m} 分 · 约 ${f}원`,
+    mvH1:'从机场出发', mvH1s:'巴士 / 出租车 / 时间 / 票价（2026年11月确认）',
+    mvA:'机场 → 主要地区', mvASub:'101·111·112 快线在 GATE 2 前，600 机场大巴在 GATE 5 前',
+    thTo:'目的地', thLine:'线路', thTime:'时间', thFare:'票价',
+    note1:'快线（红色）按距离加价：上车刷 2,000원，下车再按里程加，最远 3,000원。',
+    mvB:'公交车怎么付钱', mvBSub:'没有交通卡也能坐 —— 手机扫码即可',
+    b1t:'用支付宝/微信扫码付', b1a:'上车后，找司机旁边柱子上的 QR。用支付宝「扫一扫」→ 输入票价（市内 1,150원 / 快线 2,000원）→ 把付款完成画面给司机看。',
+    b1b:'也可以用 Visa/Mastercard 等境外非接触卡，直接在刷卡机上贴一下（2025年8月起）。',
+    b2t:'下车也要刷一次', b2:'下车刷卡（하차 태그）。40 分钟内换乘最多 2 次有折扣；快线即使换乘，下车时里程费仍会另收。',
+    b3t:'车上不收现金', b3:'2024年10月起济州所有公交取消现金（车内钱箱已拆除）。交通卡可在便利店购买、充值。',
+    ftTh1:'种类', ftTh2:'成人（刷卡）',
+    ft1:'市内·支线·景点循环', ft2:'快线（20km 内）', ft3:'快线（40km 以上）', ft4:'机场大巴 600', ft5:'乡村巴士（牛岛等）',
+    note2:'实时到站：KakaoMap / NaverMap（输入韩文站名）或 bus.jeju.go.kr。乡村线路 20~60 分钟一班，别卡点。',
+    mvC:'出租车', mvCSub:'起步价 4,300원（2km）· 深夜加成 20% · 叫车用 k.ride',
+    tx1:'起步价', tx1v:'4,300원（含 2km）', tx2:'距离', tx2v:'每 126m 加 100원',
+    tx3:'夜间', tx3v:'23:00–04:00 加价 20%', tx4:'长途', tx4v:'超过 20km 距离费加价 20%',
+    tx5:'叫车', tx5v:'k.ride（中文界面 · 支付宝+/微信支付）· Kakao T（可用境外号码，选「直接付给司机」）',
+    calcLabel:'从机场到这里的预估车费（按里程估算，不含堵车）',
+    ct1:'时间', ct2:'预估车费', ct3:'里程',
+    note3:'司机可能不接受境外卡。准备好现金或说「카드 될까요?（能刷卡吗）」，也可以让司机直接收现金。',
+    mvD:'关于租车 / 驾照', carT:'中国驾照在韩国不能开车',
+    carP:'中国未加入《日内瓦道路交通公约》，因此中国驾照 + 国际驾照（IDP）都无法在韩国使用，济州租车公司不会租给中国游客（2026年7月济州道讨论过放宽，但官方明确「不是已决定的政策」）。',
+    carP2:'替代：公交 + 出租车；牛岛上可租电动自行车/三轮电动车（需看保险条款）；多人可包车（带中文司机）。',
+    mvE:'给司机看的大字卡片', mvESub:'点一下，全屏韩文大字',
+    pyH1:'支付 & 实战贴士', pyH1s:'支付宝/微信 · 退税 · 上网 · 紧急电话（2026年11月确认）',
+    pyA:'支付宝 / 微信支付能用在哪',
+    a1t:'全岛公交车都能扫', a1:'2024年8月起，济州 868 辆公交车全部支持支付宝、微信支付等 9 个国家 17 个境外支付 App 扫码付车费。',
+    a2t:'市场、小商户（ZERO PAY 加盟店）', a2:'韩国简易支付 ZERO PAY 与支付宝（Alipay+）互通，东门市场、偶来市场、小餐馆结账时先问「알리페이 돼요?（能用支付宝吗）」，有 Alipay+ 或 ZERO PAY 标志就能扫。',
+    a3t:'便利店、Olive Young、免税店、大部分连锁', a3:'CU、GS25、7-Eleven、Olive Young、新罗/乐天免税店基本都收支付宝；大商场也能刷银联/Visa。',
+    a4t:'手续费', a4:'支付宝绑定境外卡：单笔 200 元人民币以内免手续费，超过部分约 3%。微信支付同样可绑境外卡。小额分次付更划算。',
+    noteP1:'建议随身带 3~5 万韩元现金：老市场小摊、乡村食堂、部分出租车只收现金。机场到达层有 ATM 和换钱所。',
+    pyB:'退税 (Tax Refund)',
+    rf1:'最低金额', rf1v:'单店单日 15,000원 以上（出示护照）', rf2:'单笔上限', rf2v:'100 万원 未满（即享退税）',
+    rf3:'累计上限', rf3v:'停留期间 500 万원 以下',
+    rf4:'哪里办', rf4v:'门口/收银台有「Tax Free」标志的店 → 当场扣除（即享退税）；否则拿退税单，出境前在机场退税柜台/自助机办理',
+    rf5:'带什么', rf5v:'护照 + 收据 + 商品（机场退税需海关确认）',
+    noteP2:'3 万원 购物约退 2,000원，10 万원 约退 7,000원。超过 100 万원 的单据不能在店里即享，只能走机场退税。烟酒、熟食、已开封商品不在退税范围。',
+    pyC:'上网 / 电话', n1t:'eSIM（推荐）', n1:'出发前在国内买好韩国 eSIM，落地开关数据即可用，不用排队。手机需支持 eSIM 且已解锁。',
+    n2t:'实体 SIM', n2:'济州机场到达层（1F）有运营商柜台和便利店，可买短期卡；需出示护照。',
+    n3t:'免费 Wi-Fi', n3:'机场、咖啡店、便利店、大部分酒店免费。地图和本页可提前截图/保存，隧道和山间会没信号。',
+    pyD:'紧急 & 求助电话', em1:'旅游翻译热线（中文）07:00–24:00 · 韩国境内直拨 1330，境外 +82-2-1330 · 也可在微信加「1330观光咨询」文字咨询',
+    em2:'急救 / 消防', em3:'警察', em4:'宰客投诉', em4v:'1330 或 touristcomplaint.or.kr（出租车多收钱、住宿乱收费）',
+    pyE:'小贴士', t1:'小费', t1v:'韩国不收小费，账单里已含税和服务',
+    t2:'黑猪肉', t2v:'按「1人份」点，先看价格表（有的店 1 人份 2 万원 以上），两人点 2 份足够',
+    t3:'营业时间', t3v:'很多店 15:00–17:00 休息；餐厅 21:00 后多数关门',
+    t4:'垃圾', t4v:'街头垃圾桶少，便利店有分类垃圾箱；随地丢烟头会被罚款',
+    t5:'天气', t5v:'海岛风大，冬天体感更冷；山间（汉拿山、1100高地）与海边温差大，带件外套',
+    ftrDate:'数据确认日', ftrSrc:'来源：济州巴士信息系统(bus.jeju.go.kr) · 济州观光协会观光地票价表 · 西归浦市 e-Ticket · 济州世界遗产本部 · 韩国观光公社 1330',
+    ftrNote:'本页是原型（第 1 版）。票价·时间可能变动，出发前请再确认一次。',
+    ftrMap:'地图 © OpenStreetMap 贡献者 · 中国大陆网络下地图瓦片可能加载慢，景点列表不受影响',
+    mKick:'请把这一屏给司机看 · 기사님께 보여주세요', mAsk:'여기로 가 주세요', mSub:'请带我去这里', mCopy:'复制地址', mClose:'关闭',
+    close:'关闭'
+  },
+  ko:{
+    title:'제주 현장지도', sub:'설치 없이 · 간체중문 · 기사님 카드',
+    tb1:'지도', tb2:'이동', tb3:'결제·팁',
+    hint:'지도 번호를 누르면 상세',
+    listTitle:'스팟', listSub:n=>`총 ${n}곳`,
+    hours:'운영', fee:'입장료', bus:'버스', taxi:'택시',
+    driver:'기사님께 보여주기', copy:'주소 복사', copied:'복사됨',
+    fareEst:(m,f,k)=>`약 ${m}분 · 약 ${f}원`,
+    mvH1:'공항에서 출발', mvH1s:'버스 / 택시 / 시간 / 요금(2026-11 확인)',
+    mvA:'공항 → 주요 지역', mvASub:'101·111·112 급행은 GATE 2 앞, 600 리무진은 GATE 5 앞',
+    thTo:'목적지', thLine:'노선', thTime:'시간', thFare:'요금',
+    note1:'급행(빨강)은 거리비례: 탈 때 2,000원, 내릴 때 거리요금 추가, 최대 3,000원.',
+    mvB:'버스 요금 결제', mvBSub:'교통카드 없이도 됩니다 — 휴대폰 QR로',
+    b1t:'알리페이·위챗페이 QR 결제', b1a:'타면 기사님 옆 기둥의 QR을 알리페이로 스캔 → 요금 입력(간선 1,150원 / 급행 2,000원) → 결제 완료 화면을 기사님께 보여주기.',
+    b1b:'Visa·Mastercard 등 해외 비접촉 카드를 단말기에 대는 방식도 됩니다(2025년 8월 도입).',
+    b2t:'내릴 때도 태그', b2:'하차 태그 필수. 40분 안에 갈아타면 최대 2회 환승 할인. 급행은 환승과 별개로 하차 때 거리요금이 붙습니다.',
+    b3t:'현금 없는 버스', b3:'2024년 10월부터 제주 전 노선버스 현금 결제 불가(현금함 철거). 교통카드는 편의점에서 구매·충전.',
+    ftTh1:'종류', ftTh2:'성인(카드)',
+    ft1:'간선·지선·관광지순환', ft2:'급행(20km까지)', ft3:'급행(40km 초과)', ft4:'공항리무진 600', ft5:'마을버스(우도 등)',
+    note2:'실시간 도착: 카카오맵·네이버지도(한국어 정류장명) 또는 bus.jeju.go.kr. 읍면 노선은 20~60분 간격이니 여유 있게.',
+    mvC:'택시', mvCSub:'기본요금 4,300원(2km) · 심야 20% · 호출은 k.ride',
+    tx1:'기본요금', tx1v:'4,300원(2km 포함)', tx2:'거리', tx2v:'126m마다 100원',
+    tx3:'심야', tx3v:'23:00–04:00 20% 할증', tx4:'장거리', tx4v:'20km 초과 시 거리요금 20% 할증',
+    tx5:'호출 앱', tx5v:'k.ride(중국어 지원 · 알리페이+/위챗페이) · 카카오T(해외번호 가입, "기사님께 직접 결제" 선택)',
+    calcLabel:'공항에서 여기까지 예상 요금(거리 기준, 정체 미반영)',
+    ct1:'시간', ct2:'예상 요금', ct3:'거리',
+    note3:'해외카드 결제를 거절하는 기사님이 있습니다. 현금을 준비하거나 "카드 될까요?"라고 물어보세요.',
+    mvD:'렌터카 / 운전면허', carT:'중국 면허로는 한국에서 운전할 수 없습니다',
+    carP:'중국은 제네바 도로교통협약 가입국이 아니라 중국 면허·국제운전면허증 모두 한국에서 쓸 수 없고, 제주 렌터카 업체도 중국인에게 차를 빌려주지 않습니다(2026년 7월 제주도가 완화를 논의했지만 "결정된 정책 아님"으로 정리).',
+    carP2:'대안: 버스 + 택시, 우도에서는 전기 이륜차·삼륜차 대여(보험 조건 확인), 인원이 많으면 한국어 기사 포함 차량 대절.',
+    mvE:'기사님께 보여줄 카드', mvESub:'누르면 전체 화면 큰 글씨',
+    pyH1:'결제 & 실전 팁', pyH1s:'알리페이/위챗 · 택스리펀 · 통신 · 긴급 연락처(2026-11 확인)',
+    pyA:'알리페이 / 위챗페이 되는 곳',
+    a1t:'전 노선 버스 QR 결제', a1:'2024년 8월부터 제주 868대 버스 전 노선에서 알리페이·위챗페이 등 9개국 17개 해외 결제 앱 QR 결제가 됩니다.',
+    a2t:'시장·소상공인(ZERO PAY 가맹)', a2:'한국 간편결제 ZERO PAY가 알리페이(Alipay+)와 연동됩니다. 동문시장·올레시장·작은 식당에서 "알리페이 돼요?"라고 물어보고 Alipay+·ZERO PAY 표시가 있으면 결제됩니다.',
+    a3t:'편의점·올리브영·면세점·대형 체인', a3:'CU·GS25·7-Eleven·올리브영·신라/롯데면세점은 대부분 알리페이 되고, 대형 매장은 유니온페이·비자도 됩니다.',
+    a4t:'수수료', a4:'알리페이 해외카드: 1회 200위안 이하 수수료 없음, 초과분 약 3%. 위챗페이도 해외카드 등록 가능. 소액은 나눠 결제하는 편이 유리.',
+    noteP1:'현금 3~5만 원은 챙기세요: 노점·읍면 식당·일부 택시는 현금만 받습니다. 공항 1층에 ATM·환전소가 있습니다.',
+    pyB:'택스리펀 (Tax Refund)',
+    rf1:'최소 금액', rf1v:'한 매장 하루 15,000원 이상(여권 제시)', rf2:'1건 한도', rf2v:'100만 원 미만(즉시환급)',
+    rf3:'누적 한도', rf3v:'체류 중 500만 원 이하',
+    rf4:'어디서', rf4v:'입구·계산대에 "Tax Free" 표시가 있으면 그 자리에서 차감(즉시환급), 없으면 환급전표를 받아 출국 전 공항 환급창구·키오스크에서',
+    rf5:'준비물', rf5v:'여권 + 영수증 + 물품(공항 환급은 세관 확인)',
+    noteP2:'3만 원이면 약 2,000원, 10만 원이면 약 7,000원 환급. 100만 원 이상 영수증은 매장 즉시환급 불가(공항 환급만). 담배·주류·조리식품·개봉 상품은 제외.',
+    pyC:'통신 / 인터넷', n1t:'eSIM(추천)', n1:'출국 전에 한국 eSIM을 사두면 도착 후 데이터만 켜면 됩니다. 기기가 eSIM 지원·언락 상태여야 합니다.',
+    n2t:'실물 유심', n2:'제주공항 1층 도착층에 통신사 카운터와 편의점이 있어 단기 유심 구매 가능(여권 필요).',
+    n3t:'무료 와이파이', n3:'공항·카페·편의점·대부분 호텔 무료. 지도와 이 페이지는 미리 캡처해 두면 터널·산간에서도 볼 수 있습니다.',
+    pyD:'긴급 · 도움 전화', em1:'관광통역안내(중국어) 07:00–24:00 · 국내 1330, 해외 +82-2-1330 · 위챗에서 "1330관광안내" 문자 상담도 가능',
+    em2:'응급 / 소방', em3:'경찰', em4:'바가지 신고', em4v:'1330 또는 touristcomplaint.or.kr(택시 부당요금·숙소 초과요금)',
+    pyE:'알아둘 것', t1:'팁', t1v:'한국은 팁 문화가 없습니다. 계산서에 세금·서비스 포함',
+    t2:'흑돼지', t2v:'1인분 단위로 주문, 가격표 먼저 확인(1인분 2만 원대도 있음). 2명이면 2인분이면 충분',
+    t3:'영업시간', t3v:'15:00–17:00 브레이크타임이 흔하고, 식당은 21:00 이후 대부분 닫습니다',
+    t4:'쓰레기', t4v:'길거리 쓰레기통이 적고 편의점에 분리수거함이 있습니다. 담배꽁초 무단투기는 과태료',
+    t5:'날씨', t5v:'섬이라 바람이 강하고 겨울 체감이 낮습니다. 산간(한라산·1100고지)과 해변은 일교차가 커 겉옷을 챙기세요',
+    ftrDate:'데이터 확인일', ftrSrc:'출처: 제주버스정보시스템(bus.jeju.go.kr) · 제주관광협회 관광지요금표 · 서귀포시 e-Ticket · 제주세계유산본부 · 한국관광공사 1330',
+    ftrNote:'1차 프로토타입입니다. 요금·시간은 바뀔 수 있으니 출발 전 다시 확인하세요.',
+    ftrMap:'지도 © OpenStreetMap 기여자 · 중국 본토 네트워크에서는 지도 타일이 느리거나 안 뜰 수 있고, 스팟 목록은 항상 표시됩니다',
+    mKick:'기사님께 이 화면을 보여주세요', mAsk:'여기로 가 주세요', mSub:'请带我去这里', mCopy:'주소 복사', mClose:'닫기',
+    close:'닫기'
+  }
+};
+
+let LANG = 'zh';
+let REGION = 'all';
+let map, markers = {}, activeLayer = null;
+
+/* taxi: base 4,300 for 2km, +100 per 126m, +20% distance fare over 20km */
+function taxiFare(km){
+  if(!km) return 0;
+  const extra = Math.max(0, km - 2);
+  const dist = Math.ceil(extra * 1000 / 126) * 100;
+  let total = 4300 + dist;
+  if(km > 20) total += dist * 0.2;
+  return Math.round(total / 100) * 100;
+}
+const fmt = n => n.toLocaleString('ko-KR');
+
+function t(){ return T[LANG]; }
+
+function setLang(l){
+  LANG = l;
+  document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'ko');
+  document.getElementById('lang-zh').classList.toggle('on', l === 'zh');
+  document.getElementById('lang-ko').classList.toggle('on', l === 'ko');
+  paintStatic();
+  renderChips();
+  renderSpots();
+  renderAirport();
+  renderFlash();
+  renderCalc();
+  drawMarkers();
+}
+
+function paintStatic(){
+  const x = t();
+  const set = (id, v) => { const el = document.getElementById(id); if(el && v != null) el.textContent = v; };
+  set('h-title', x.title); set('h-sub', x.sub);
+  set('tb1', x.tb1); set('tb2', x.tb2); set('tb3', x.tb3);
+  set('map-hint', x.hint);
+  set('list-title', x.listTitle);
+  set('mv-h1', x.mvH1); set('mv-h1s', x.mvH1s);
+  set('mv-a', x.mvA); set('mv-a-sub', x.mvASub);
+  set('mv-note1', x.note1);
+  set('mv-b', x.mvB); set('mv-b-sub', x.mvBSub);
+  set('bus-s1t', x.b1t); set('bus-s1a', x.b1a); set('bus-s1b', x.b1b);
+  set('bus-s2t', x.b2t); set('bus-s2', x.b2);
+  set('bus-s3t', x.b3t); set('bus-s3', x.b3);
+  set('ft-th1', x.ftTh1); set('ft-th2', x.ftTh2);
+  set('ft1', x.ft1); set('ft2', x.ft2); set('ft3', x.ft3); set('ft4', x.ft4); set('ft5', x.ft5);
+  set('mv-note2', x.note2);
+  set('mv-c', x.mvC); set('mv-c-sub', x.mvCSub);
+  set('tx-k1', x.tx1); set('tx-v1', x.tx1v); set('tx-k2', x.tx2); set('tx-v2', x.tx2v);
+  set('tx-k3', x.tx3); set('tx-v3', x.tx3v); set('tx-k4', x.tx4); set('tx-v4', x.tx4v);
+  set('tx-k5', x.tx5); set('tx-v5', x.tx5v);
+  set('calc-label', x.calcLabel);
+  set('calc-t1', x.ct1); set('calc-t2', x.ct2); set('calc-t3', x.ct3);
+  set('mv-note3', x.note3);
+  set('mv-d', x.mvD); set('car-t', x.carT); set('car-p', x.carP); set('car-p2', x.carP2);
+  set('mv-e', x.mvE); set('mv-e-sub', x.mvESub);
+  set('py-h1', x.pyH1); set('py-h1s', x.pyH1s);
+  set('py-a', x.pyA);
+  set('pay-a1t', x.a1t); set('pay-a1', x.a1);
+  set('pay-a2t', x.a2t); set('pay-a2', x.a2);
+  set('pay-a3t', x.a3t); set('pay-a3', x.a3);
+  set('pay-a4t', x.a4t); set('pay-a4', x.a4);
+  set('py-note1', x.noteP1);
+  set('py-b', x.pyB);
+  set('rf-k1', x.rf1); set('rf-v1', x.rf1v); set('rf-k2', x.rf2); set('rf-v2', x.rf2v);
+  set('rf-k3', x.rf3); set('rf-v3', x.rf3v); set('rf-k4', x.rf4); set('rf-v4', x.rf4v);
+  set('rf-k5', x.rf5); set('rf-v5', x.rf5v);
+  set('py-note2', x.noteP2);
+  set('py-c', x.pyC); set('net-t1', x.n1t); set('net-p1', x.n1); set('net-t2', x.n2t); set('net-p2', x.n2);
+  set('net-t3', x.n3t); set('net-p3', x.n3);
+  set('py-d', x.pyD); set('em-1330', x.em1); set('em-119', x.em2); set('em-112', x.em3);
+  set('em-k2', x.em4); set('em-v2', x.em4v);
+  set('py-e', x.pyE);
+  set('tip-k1', x.t1); set('tip-v1', x.t1v); set('tip-k2', x.t2); set('tip-v2', x.t2v);
+  set('tip-k3', x.t3); set('tip-v3', x.t3v); set('tip-k4', x.t4); set('tip-v4', x.t4v);
+  set('tip-k5', x.t5); set('tip-v5', x.t5v);
+  set('ftr-date', x.ftrDate); set('ftr-src', x.ftrSrc); set('ftr-note', x.ftrNote); set('ftr-map', x.ftrMap);
+  set('m-kick', x.mKick); set('m-ask', x.mAsk); set('m-sub', x.mSub);
+  set('m-copy', x.mCopy); set('m-close', x.mClose);
+}
+
+/* ---------- map ---------- */
+function initMap(){
+  map = L.map('map', {zoomControl:false, scrollWheelZoom:true, attributionControl:true,
+        minZoom:9, maxZoom:18,
+        maxBounds:[[32.9,125.7],[33.85,127.35]], maxBoundsViscosity:0.8})
+        .setView([33.38, 126.55], 10);
+  L.control.zoom({position:'topright'}).addTo(map);
+
+  const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+  }).addTo(map);
+
+  let errs = 0, switched = false;
+  tiles.on('tileerror', () => {
+    errs++;
+    if(errs > 6 && !switched){
+      switched = true;
+      map.removeLayer(tiles);
+      L.tileLayer('https://tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {maxZoom:19,
+        attribution:'&copy; OpenStreetMap contributors, HOT'}).addTo(map);
+    }
+  });
+
+  activeLayer = L.layerGroup().addTo(map);
+  drawMarkers();
+  fitIsland();
+}
+
+function fitIsland(){
+  if(!map) return;
+  const vis = SPOTS.filter(s => REGION==='all' || s.region===REGION);
+  const b = L.latLngBounds(vis.map(s => [s.lat, s.lng]));
+  map.fitBounds(b, {padding:[26,26]});
+  if(map.getZoom() > 11) map.setZoom(11);
+  if(REGION === 'all' && map.getZoom() < 10) map.setZoom(10);
+}
+
+function focusSpot(id){
+  const s = SPOTS.find(x => x.id === id);
+  if(!s || !map) return;
+  setTab('map');
+  map.flyTo([s.lat, s.lng], Math.max(11, map.getZoom()), {duration:.6});
+  const m = markers[id];
+  if(m) setTimeout(()=>m.openPopup(), 650);
+  const el = document.getElementById('spot-' + id);
+  if(el){
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('hl');
+    setTimeout(()=>el.classList.remove('hl'), 2200);
+  }
+}
+
+function drawMarkers(){
+  if(!map) return;
+  activeLayer.clearLayers();
+  markers = {};
+  SPOTS.forEach((s, i) => {
+    if(REGION !== 'all' && s.region !== REGION) return;
+    const col = (CAT[s.cat] || {}).c || '#ff8a3d';
+    const icon = L.divIcon({
+      className:'', iconSize:[44,44], iconAnchor:[22,38], popupAnchor:[0,-34],
+      html:`<div class="pinwrap"><div class="pin" style="background:${col}"><span>${i+1}</span></div></div>`
+    });
+    const m = L.marker([s.lat, s.lng], {icon, title:s[LANG]}).addTo(activeLayer);
+    const pop = `<div style="min-width:150px">
+        <b>${s.zh}</b><br><span style="color:#93a4bb;font-size:12px">${s.ko}</span>
+        <div style="margin-top:4px;color:#c8d6e6;font-size:12px">${s.hours[LANG]}</div>
+        <button class="btn primary" style="margin-top:7px;padding:6px 10px;font-size:12px" onclick="openDriver('${s.id}')">${t().driver}</button>
+      </div>`;
+    m.popupHTML = pop;
+    m.bindPopup(pop);
+    markers[s.id] = m;
+  });
+}
+
+/* ---------- list ---------- */
+function renderChips(){
+  const el = document.getElementById('chips');
+  el.innerHTML = REGIONS.map(r =>
+    `<button class="chip ${REGION===r.id?'on':''}" onclick="setRegion('${r.id}')">${r[LANG]}</button>`).join('');
+}
+function setRegion(id){
+  REGION = id;
+  renderChips(); renderSpots(); drawMarkers();
+  fitIsland();
+}
+function renderSpots(){
+  const el = document.getElementById('spots');
+  const vis = SPOTS.filter(s => REGION==='all' || s.region===REGION);
+  const x = t();
+  document.getElementById('list-sub').textContent = x.listSub(vis.length);
+  el.innerHTML = vis.map(s => {
+    const i = SPOTS.indexOf(s) + 1;
+    const col = (CAT[s.cat]||{}).c || '#ff8a3d';
+    const catName = (CAT[s.cat]||{})[LANG] || '';
+    const fare = s.dist ? x.fareEst(s.min, fmt(taxiFare(s.dist)), s.dist) : '';
+    return `<article class="spot" id="spot-${s.id}">
+      <div class="spot-top" onclick="focusSpot('${s.id}')" style="cursor:pointer">
+        <div class="num" style="background:${col}">${i}</div>
+        <h3>${s.zh}<small>${s.ko} · ${catName}</small></h3>
+      </div>
+      <div class="rows">
+        <div class="row"><span class="k">${x.hours}</span><span class="v">${s.hours[LANG]}</span></div>
+        <div class="row"><span class="k">${x.fee}</span><span class="v fee">${s.fee[LANG]}</span></div>
+        <div class="row"><span class="k">${x.bus}</span><span class="v">${s.bus[LANG]}</span></div>
+        ${s.dist ? `<div class="row"><span class="k">${x.taxi}</span><span class="v">${fare}</span></div>` : ''}
+      </div>
+      <div class="acts">
+        <button class="btn primary" onclick="openDriver('${s.id}')">🚕 ${x.driver}</button>
+        <button class="btn ghost" onclick="copyText('${s.addr.replace(/'/g,"\\'")}')">📋 ${x.copy}</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderAirport(){
+  const el = document.getElementById('airport-list');
+  el.innerHTML = AIRPORT_ROWS.map(r => {
+    const to = LANG==='zh' ? r[0] : r[1];
+    const line = LANG==='zh' ? r[2] : r[3];
+    const time = LANG==='zh' ? r[4] : r[5];
+    return `<div class="arow">
+      <div class="dest">${to}</div>
+      <div class="fare">${r[6]}</div>
+      <div class="line">${line}</div>
+      <div class="tmline"><b>${time}</b></div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlash(){
+  document.getElementById('fc-grid').innerHTML = FLASH.map((f, i) => {
+    const big = LANG === 'zh' ? f.zh : f.ko;
+    const small = LANG === 'zh' ? f.ko : f.zh;
+    return `<button class="fc" onclick="openPhrase(${i})"><b>${big}</b><span>${small}</span></button>`;
+  }).join('');
+}
+
+function renderCalc(){
+  const sel = document.getElementById('calc-sel');
+  const prev = sel.value || 'seongsan';
+  sel.innerHTML = SPOTS.filter(s => s.dist).map(s => {
+    const label = LANG === 'zh' ? `${s.zh} · ${s.ko}` : `${s.ko} (${s.zh})`;
+    return `<option value="${s.id}">${label}</option>`;
+  }).join('');
+  sel.value = prev;
+  updateCalc();
+}
+function updateCalc(){
+  const s = SPOTS.find(x => x.id === document.getElementById('calc-sel').value) || SPOTS[5];
+  document.getElementById('calc-min').textContent = s.min + (LANG==='zh'?' 分':'분');
+  document.getElementById('calc-fare').textContent = fmt(taxiFare(s.dist)) + '원';
+  document.getElementById('calc-km').textContent = s.dist.toFixed(1) + ' km';
+}
+
+/* ---------- tabs ---------- */
+function setTab(id){
+  ['map','move','pay'].forEach(k => {
+    document.getElementById('tab-'+k).classList.toggle('on', k===id);
+    document.getElementById('tabbtn-'+k).classList.toggle('on', k===id);
+  });
+  if(location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id);
+  window.scrollTo({top:0, behavior:'instant'});
+  if(id === 'map' && map) setTimeout(()=>map.invalidateSize(), 60);
+}
+
+/* ---------- driver modal ---------- */
+let currentAddr = '';
+function openDriver(id){
+  const s = SPOTS.find(x => x.id === id);
+  if(!s) return;
+  currentAddr = s.addr;
+  document.getElementById('m-tag').style.display = '';
+  document.getElementById('m-tag').textContent = LANG === 'zh' ? '목적지 · 目的地' : '목적지';
+  document.getElementById('m-zh').textContent = s.zh;
+  document.getElementById('m-ko').textContent = s.ko;
+  document.getElementById('m-addr').textContent = s.addr;
+  document.getElementById('m-ask').textContent = t().mAsk;
+  document.getElementById('m-sub').textContent = t().mSub;
+  document.getElementById('modal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function openPhrase(i){
+  const f = FLASH[i];
+  currentAddr = '';
+  document.getElementById('m-tag').style.display = 'none';
+  document.getElementById('m-zh').textContent = f.zh;
+  document.getElementById('m-ko').textContent = f.ko;
+  document.getElementById('m-addr').textContent = '';
+  document.getElementById('m-addr').style.display = 'none';
+  document.getElementById('m-ask').textContent = '';
+  document.getElementById('m-sub').textContent = f.sub;
+  document.getElementById('modal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('on');
+  document.getElementById('m-addr').style.display = '';
+  document.body.style.overflow = '';
+}
+function copyAddr(){ copyText(currentAddr || document.getElementById('m-addr').textContent); }
+
+function copyText(txt){
+  if(!txt) return;
+  const done = () => toast(t().copied + ' · ' + txt);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){}
+    document.body.removeChild(ta);
+  }
+}
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('on'), 1900);
+}
+
+/* ---------- boot ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  paintStatic();
+  renderChips();
+  renderSpots();
+  renderAirport();
+  renderFlash();
+  renderCalc();
+  document.getElementById('calc-sel').addEventListener('change', updateCalc);
+  initMap();
+  document.getElementById('modal').addEventListener('click', e => {
+    if(e.target.id === 'modal') closeModal();
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+  const readHash = () => (location.hash || '').replace(/^#\/?/, '');
+  if(['map','move','pay'].includes(readHash())) setTab(readHash());
+  window.addEventListener('hashchange', () => {
+    const k = readHash();
+    if(['map','move','pay'].includes(k)) setTab(k);
+  });
+});
+</script>
+</body>
+</html>
